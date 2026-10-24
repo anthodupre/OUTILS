@@ -645,14 +645,14 @@ function build() {
     if ((sn.p6 || 0) >= 2 || (sn.rate || 0) >= 0.5 || sn.frzNow || sn.frzPast || sn.iceNow || sn.poudNow) lv = 'bad';
     sn.lv = lv; sn.lvTxt = lv === 'bad' ? 'REQUIS' : lv === 'warn' ? 'À PRÉVOIR' : 'OK';
     const A = [];
-    if (sn.frzNow || sn.frzPast) A.push('Verglas : abrasif sur escaliers, allées et stationnement');
-    else if (sn.iceNow) A.push('Regel : surfaces glacées, abrasif sur allées et escaliers');
+    if (sn.frzNow || sn.frzPast) A.push('Verglas : casser la glace au pic et à la pelle (escaliers, allées, quais)');
+    else if (sn.iceNow) A.push('Regel : surfaces glacées, pic à glace et pelle sur allées et escaliers');
     if ((sn.rate || 0) >= 0.5 || (sn.p6 || 0) >= 2) A.push('Déneiger : allées, escaliers, quais de tapis, stationnement');
     else if (sn.snowing) A.push('Neige faible : surveiller escaliers et quais de tapis');
     if (sn.poudNow) A.push('Poudrerie : congères aux accès et fins de piste');
     if (sn.start) A.push('Neige dès ' + hh(sn.start) + ' (≈ ' + cm(sn.n12) + ' / 12 h) : prévoir l\'équipe');
-    if (sn.refreeze) A.push('Regel vers ' + hh(sn.refreeze) + ' : prévoir abrasif');
-    if (sn.frzNext && !sn.frzNow) A.push('Verglas prévu : préparer abrasif et sel');
+    if (sn.refreeze) A.push('Regel vers ' + hh(sn.refreeze) + ' : prévoir pics à glace et pelles');
+    if (sn.frzNext && !sn.frzNow) A.push('Verglas prévu : préparer pics à glace et pelles');
     if (sn.poudNext) A.push('Poudrerie possible vers ' + hh(sn.poudNext));
     if ((sn.p24 || 0) >= 5 && !A.length) A.push('Finition : bords de pistes, sorties de tapis, dépôt à tubes');
     if (!A.length) A.push(S.lim ? 'Données de neige limitées (mode secours)' : 'Rien à prévoir — conditions sèches');
