@@ -10,7 +10,7 @@ Tableau de bord pour les employés qui travaillent dehors aux Glissades. Il ne m
 - **À noter** : conditions prévues sur les pistes et les équipements, par importance (pistes glacées, couloirs qui se recouvrent, neige soufflée, glace sur les tapis roulants, rafales au télérafting, noirceur, fabrication de neige).
 - **Déneigement** : niveau faible, moyen ou élevé, neige tombée et prévue, verglas ou regel, poudrerie.
 - **Ressenti** : maintenant et pire de la journée, temps avant gelure, heures où le ressenti atteint −28 ou moins, min et max.
-- **Journée** : temps avant la fermeture ou l'ouverture, horaire, achalandage prévu, noirceur, neige artificielle.
+- **Journée** : temps avant la fermeture ou l'ouverture, horaire, achalandage prévu, noirceur, conditions de fabrication de neige pour la nuit qui vient (de la fermeture à l'ouverture du lendemain).
 - Toucher une carte ouvre son panneau de détail.
 
 **Barre du bas** : 24 h (heure par heure détaillé), Radar (animé, dernière heure autour du Domaine), Chrono (km/h par zone), Alertes d'Environnement Canada. Une pastille météo en haut ouvre le détail de la météo.

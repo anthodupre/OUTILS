@@ -586,13 +586,6 @@ const RISK = [
   {min:-999, n:'Extrême',   cls:'bad',  frost:'< 2 min',      txt:'La peau exposée peut geler en moins de 2 minutes.'}
 ];
 const riskOf = wc => wc == null ? null : RISK.find(r => Math.round(wc) >= r.min);
-function snowMk(tw) {
-  if (tw == null) return {n:'—', cls:''};
-  if (tw <= -7) return {n:'Excellente', cls:'c-ok'};
-  if (tw <= -4) return {n:'Bonne', cls:'c-ok'};
-  if (tw <= -2) return {n:'Marginale', cls:'c-warn'};
-  return {n:'Impossible', cls:'mute'};
-}
 const uvTxt = u => u == null ? '' : u < 3 ? 'faible' : u < 6 ? 'modéré' : u < 8 ? 'élevé' : 'très élevé';
 function schedFor(ms) {
   const k = ymd(ms).slice(5), wd = lp(ms).wd;
@@ -710,13 +703,20 @@ function build() {
   else if (now < sc.fm) { dy.state = 'Ouvert'; dy.cls = 'ok'; dy.lbl = 'Fermeture dans'; dy.cd = dur(sc.fm - now); }
   else { const n = nextOpen(now); dy.state = 'Terminé'; dy.cls = 'mutebg'; dy.lbl = 'Prochaine ouverture'; dy.cd = n ? (ymd(n.om) === ymd(now + 24 * HOUR) ? 'demain ' + n.o + ' h' : dateTxt(n.om)) : '—'; }
   if (V.set) dy.light = {lbl:'Coucher · noirceur', v:hm(V.set) + ' · ' + hm(V.set + 30 * 60000)};
+  /* Fabrication de neige : se fait la nuit, de la fermeture à l'ouverture du lendemain */
   if (hi) {
-    const tw = wetBulb(V.cur.T, V.cur.RH); dy.tw = tw; dy.snm = snowMk(tw);
-    const fut = H.filter(x => x.t > now && x.t <= now + 24 * HOUR).map(x => ({t:x.t, tw:wetBulb(x.T, x.RH)}));
-    const good = x => x.tw != null && x.tw <= -4;
-    if (tw != null && tw <= -4) { const e = fut.find(x => !good(x)); dy.win = e ? 'jusqu\'à ' + hh(e.t) : '> 24 h'; }
-    else { const s = fut.findIndex(good); if (s >= 0) { const e = fut.slice(s).find(x => !good(x)); dy.win = e ? hh(fut[s].t) + ' → ' + hh(e.t) : 'dès ' + hh(fut[s].t); } else dy.win = 'aucune 24 h'; }
-    dy.twH = fut;
+    dy.tw = wetBulb(V.cur.T, V.cur.RH);
+    const p0 = lp(now), oT = sc && sc.om ? sc.om : localMs(p0.y, p0.mo, p0.d, 9, 0), cT = sc && sc.fm ? sc.fm : localMs(p0.y, p0.mo, p0.d, 17, 0);
+    let st, en;
+    if (now < oT && p0.h < 12) { st = now; en = oT; }
+    else { st = Math.max(now, cT); const q = lp(now + 24 * HOUR), ns = schedMs(localMs(q.y, q.mo, q.d, 12, 0)); en = ns && ns.om ? ns.om : localMs(q.y, q.mo, q.d, 8, 0); }
+    const nh = H.filter(x => x.t >= Math.floor(st / HOUR) * HOUR && x.t < en).map(x => ({t:x.t, tw:wetBulb(x.T, x.RH)})).filter(x => x.tw != null);
+    const good = nh.filter(x => x.tw <= -4), exc = nh.filter(x => x.tw <= -7);
+    let q = null;
+    if (nh.length) q = exc.length >= nh.length / 2 ? {n:'Excellente', cls:'c-ok'} : good.length >= nh.length / 2 ? {n:'Bonne', cls:'c-ok'} :
+      good.length >= 2 ? {n:'Partielle', cls:'c-warn'} : nh.some(x => x.tw <= -2) ? {n:'Marginale', cls:'c-warn'} : {n:'Impossible', cls:'mute'};
+    dy.night = {st, en, q, hours:nh, win:good.length ? hh(good[0].t) + ' → ' + hh(good[good.length - 1].t + HOUR) : null};
+    dy.snm = q;
   }
   V.day = dy;
   /* Glisse sur les heures d'ouverture du jour (sinon les 9 prochaines heures) */
@@ -825,8 +825,7 @@ function plan(V, H, now) {
   else if (sn.refreeze) add(2, '🧊', 'Regel vers ' + hh(sn.refreeze) + ' : pistes glacées en soirée et demain matin');
   if (!sn.rainNow && work.some(x => x.t > now && x.t < close && x.T > 1 && (x.sw || 0) > 300)) add(3, '☀️', 'Neige molle en après-midi : ornières et bosses probables');
   if (V.set && sc && sc.fm && sc.fm > V.set) add(3, '🌙', 'Noirceur vers ' + hm(V.set + 30 * 60000) + ', ouvert jusqu\'à ' + sc.f + ' h');
-  if (dy.tw != null && dy.tw <= -4) add(3, '🌨️', 'Conditions favorables à la fabrication de neige ' + (dy.win === '> 24 h' ? 'toute la journée' : 'maintenant (' + dy.win + ')'));
-  else if (dy.win && /→|dès/.test(dy.win)) add(3, '🌨️', 'Fenêtre de fabrication de neige : ' + dy.win);
+  if (dy.night && dy.night.q && dy.night.win) add(3, '🌨️', 'Fabrication de neige cette nuit : ' + dy.night.q.n.toLowerCase() + ' (' + dy.night.win + ')');
   if (!P.length && c) add(3, '✓', 'Conditions stables');
   P.sort((a, b) => a.p - b.p); V.pistes = P;
 }
@@ -939,7 +938,7 @@ function renderMain() {
     kv('Horaire', dy.s ? (dy.s.o != null ? hrsTxt(dy.s) : 'fermé') : '—') +
     (V.crowd ? kv('Achalandage', V.crowd.n.toLowerCase(), 'c-' + V.crowd.cls) : '') +
     (V.set ? kv('Noirceur', hm(V.set + 30 * 60000), 'opt') : '') +
-    (dy.snm ? kv('Neige artif.', dy.snm.n.toLowerCase(), dy.snm.cls) : '') + '</div>';
+    (dy.snm ? kv('Neige artif. nuit', dy.snm.n.toLowerCase(), dy.snm.cls) : '') + '</div>';
 }
 function renderNav() {
   const nal = VM.alerts ? VM.alerts.length : 0;
@@ -1033,11 +1032,11 @@ function mDay() {
   h += '<h4>7 prochains jours (horaire type de la saison)</h4><table class="tbl"><tr><th>Jour</th><th>Heures</th><th>Note</th></tr>';
   for (let d = 0; d < 7; d++) { const p = lp(now + d * 24 * HOUR), t = localMs(p.y, p.mo, p.d, 12, 0), s = schedFor(t); h += '<tr class="' + (d === 0 ? 'hl' : '') + '"><td>' + dateTxt(t) + '</td><td>' + (s ? (s.o != null ? hrsTxt(s) : 'Fermé') : 'Hors saison') + '</td><td class="mute">' + esc(s ? s.note : '') + '</td></tr>'; }
   h += '</table>';
-  if (dy.twH) {
-    h += '<h4>Fabrication de neige · bulbe humide (24 h)</h4><div class="mini">' + dy.twH.filter((x, i) => i % 2 === 0).map(x => {
-      const k = x.tw == null ? 0 : x.tw <= -7 ? 2 : x.tw <= -4 ? 2 : x.tw <= -2 ? 3 : 0;
-      return '<span class="k' + k + '" style="font-size:.56rem">' + lp(x.t).h + 'h<br>' + (x.tw != null ? Math.round(x.tw) : '—') + '</span>';
-    }).join('') + '</div><p class="mute" style="font-size:.66rem">Bulbe humide ≤ −7 ° excellente · ≤ −4 ° bonne · ≤ −2 ° marginale · au-dessus : impossible. Maintenant : ' + tf1(dy.tw) + ' (' + (dy.snm ? dy.snm.n : '—') + ').</p>';
+  if (dy.night && dy.night.hours.length) {
+    const nt = dy.night, hs = nt.hours.length > 14 ? nt.hours.filter((x, i) => i % 2 === 0) : nt.hours;
+    h += '<h4>Fabrication de neige cette nuit (' + hh(nt.st) + ' → ' + hh(nt.en) + ')</h4>' + R('Conditions', nt.q ? nt.q.n : '—', nt.q ? nt.q.cls : '') + R('Heures favorables', nt.win || 'aucune') +
+      '<div class="mini">' + hs.map(x => '<span class="k' + (x.tw <= -4 ? 2 : x.tw <= -2 ? 3 : 0) + '">' + lp(x.t).h + 'h<br>' + Math.round(x.tw) + '°</span>').join('') + '</div>' +
+      '<p class="mute" style="font-size:.75rem">Selon la température de bulbe humide : ≤ −7° excellente, ≤ −4° bonne, ≤ −2° marginale, au-dessus impossible.</p>';
   }
   h += '<p style="font-size:.72rem"><a class="lnk" href="' + CFG.horaireWeb + '" target="_blank" rel="noopener">Horaire officiel ↗</a> — les heures peuvent varier selon la météo.</p>';
   openModal('Journée', h);
