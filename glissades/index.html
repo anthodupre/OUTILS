@@ -241,7 +241,7 @@ const pad = n => String(n).padStart(2, '0');
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num = x => (x == null || x === '' || !isFinite(+x)) ? null : +x;
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
-const norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+const norm = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 
 const _fp = new Intl.DateTimeFormat('en-US', {timeZone:CFG.tz, hourCycle:'h23', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', weekday:'short'});
@@ -266,7 +266,7 @@ function dur(ms) {
   if (ms == null) return '—'; const m = Math.max(0, Math.round(ms / 60000));
   if (m < 60) return m + ' min'; const h = Math.floor(m / 60), r = m % 60; return h + ' h' + (r ? ' ' + pad(r) : '');
 }
-const MINUS = '−';
+const MINUS = '\u2212';
 const tf = x => x == null ? '—' : String(Math.round(x)).replace('-', MINUS) + '°';
 const tf1 = x => x == null ? '—' : (Math.round(x * 10) / 10).toFixed(1).replace('.', ',').replace('-', MINUS) + '°';
 const n0 = x => x == null ? '—' : String(Math.round(x));
@@ -374,7 +374,7 @@ function htmlLines(html) {
   let s = html.replace(/<(script|style|noscript|svg|template)\b[\s\S]*?<\/\1>/gi, ' ');
   s = s.replace(/<br\s*\/?>/gi, '\n').replace(/<\/(p|li|h[1-6]|div|td|th|tr|ul|ol|section|article|header|footer|figure|figcaption|button)>/gi, '\n').replace(/<li\b[^>]*>/gi, '\n');
   s = decodeEnt(s.replace(/<[^>]+>/g, ' '));
-  return s.split('\n').map(l => l.replace(/[\s ]+/g, ' ').trim()).filter(Boolean);
+  return s.split('\n').map(l => l.replace(/[\s\u00a0]+/g, ' ').trim()).filter(Boolean);
 }
 const FRAC = /^(\d+)\s*\/\s*(\d+)$/;
 const frac = s => { const m = FRAC.exec(String(s || '').trim()); return m ? {o:+m[1], t:+m[2]} : null; };
@@ -1114,7 +1114,7 @@ function mDev() {
   const sc = SCEN[DEV.scen] || SCEN.parfaite, T = DEV.T != null ? DEV.T : sc.T, ws = DEV.ws != null ? DEV.ws : sc.ws, wg = DEV.wg != null ? DEV.wg : sc.wg;
   const sl = (id, lbl, min, max, step, v, unit) => '<div class="sl"><span>' + lbl + '</span><input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + v + '"><b id="' + id + 'V">' + v + unit + '</b></div>';
   const st = k => D.err[k] ? '<b class="c-bad">erreur</b> <span class="mute">' + esc(D.err[k]).slice(0, 60) + '</span>' : D[k] ? '<b class="c-ok">OK</b> <span class="mute">' + hm(D[k].t) + '</span>' : '<span class="mute">—</span>';
-  const shiftTxt = DEV.shift ? (DEV.shift > 0 ? '+' : '−') + dur(Math.abs(DEV.shift)) : 'aucun';
+  const shiftTxt = DEV.shift ? (DEV.shift > 0 ? '+' : '\u2212') + dur(Math.abs(DEV.shift)) : 'aucun';
   let h = '<div class="bg"><button class="btn' + (DEV.sim ? ' on' : '') + '" data-act="devSim">Simulation : ' + (DEV.sim ? 'ACTIVE' : 'inactive') + '</button>' +
     '<button class="btn' + (DEV.siteOpen ? ' on' : '') + '" data-act="devSite">Site simulé : ' + (DEV.siteOpen ? 'ouvert' : 'fermé') + '</button></div>' +
     '<h4>Scénarios</h4><div class="bg">' + Object.keys(SCEN).map(k => '<button class="btn' + (DEV.scen === k ? ' on' : '') + '" data-act="devScen" data-v="' + k + '">' + SCEN[k].nom + '</button>').join('') + '</div>' +
