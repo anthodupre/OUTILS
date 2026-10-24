@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="fr-CA" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Glissades">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0b1726">
+<title>Glissades PDH · Info terrain</title>
+<style>
+:root{
+  --bg:#e7edf4;--card:#fff;--card2:#f2f6fa;--ink:#0b1726;--mute:#566475;--line:#d0dae5;--acc:#0a5fb4;
+  --s0:#8390a0;--s1:#1f6fd6;--s2:#0f8c55;--s3:#d97400;--s4:#d02c24;--ice:#7a3ccf;
+  --ok:#0f8c55;--yel:#c49a00;--warn:#d97400;--bad:#d02c24;--info:#1f6fd6;--sim:#8a2be2;
+  --scale:1;--gap:.3rem;
+}
+[data-theme=dark]{
+  --bg:#050c16;--card:#0e1b2b;--card2:#13253a;--ink:#eef4fb;--mute:#93a7bb;--line:#1f344c;--acc:#5aa9ff;
+  --s0:#5f6c7a;--s1:#3f8ff5;--s2:#20ad6c;--s3:#f0931f;--s4:#f0483f;--ice:#a77bff;
+  --ok:#20ad6c;--yel:#d8b21a;--warn:#f0931f;--bad:#f0483f;--info:#5aa9ff;
+}
+*{box-sizing:border-box}
+html{font-size:calc(clamp(10px,min(3.3vw,1.8vh),21px)*var(--scale));-webkit-text-size-adjust:100%}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-variant-numeric:tabular-nums}
+body{overscroll-behavior:none;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+button,input,select{font:inherit;color:inherit}
+#app{position:fixed;top:0;right:0;bottom:0;left:0;display:flex;flex-direction:column;gap:var(--gap);
+  padding:max(env(safe-area-inset-top),.3rem) max(env(safe-area-inset-right),.35rem) max(env(safe-area-inset-bottom),.3rem) max(env(safe-area-inset-left),.35rem)}
+.mute{color:var(--mute)}
+/* En-tête */
+header{display:flex;align-items:center;gap:.35rem;flex:0 0 auto}
+.brand{font-weight:850;font-size:.98rem;line-height:1;white-space:nowrap}
+.brand small{display:block;font-weight:700;font-size:.56rem;color:var(--mute);letter-spacing:.08em;margin-top:.12rem}
+.clock{font-weight:850;font-size:1.3rem;margin:0 auto;letter-spacing:-.02em}
+.pill{border-radius:99px;padding:.2rem .5rem;font-weight:850;font-size:.7rem;white-space:nowrap;color:#fff;background:var(--s0);max-width:45vw;overflow:hidden;text-overflow:ellipsis}
+.ibtn{border:1px solid var(--line);background:var(--card);border-radius:.5rem;width:2.1rem;height:2.1rem;display:grid;place-items:center;font-size:1.05rem;padding:0;cursor:pointer;flex:0 0 auto}
+.ibtn.spin{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.simtag{background:var(--sim);color:#fff;border-radius:.3rem;font-size:.6rem;font-weight:850;padding:.1rem .3rem}
+/* Puces d'alerte */
+#chips{display:flex;gap:.25rem;overflow:hidden;flex:0 0 auto;white-space:nowrap;cursor:pointer}
+.chip{border-radius:.4rem;padding:.16rem .42rem;font-size:.7rem;font-weight:750;background:var(--card);border:1px solid var(--line);flex:0 0 auto}
+.chip.bad{background:var(--bad);color:#fff;border-color:transparent}
+.chip.warn{background:var(--warn);color:#fff;border-color:transparent}
+.chip.yel{background:var(--yel);color:#111;border-color:transparent}
+.chip.info{background:var(--info);color:#fff;border-color:transparent}
+.chip.ok{color:var(--ok)}
+/* Tuiles */
+#tiles{flex:1 1 0;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:minmax(0,1fr);gap:var(--gap)}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:.6rem;padding:.36rem .46rem;min-height:0;min-width:0;overflow:hidden;display:flex;flex-direction:column;gap:.1rem;cursor:pointer}
+.tile h3{margin:0;font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);font-weight:850;display:flex;align-items:center;justify-content:space-between;gap:.3rem;white-space:nowrap;min-width:0}
+.tile h3>span:first-child{overflow:hidden;text-overflow:ellipsis}
+.tb{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;justify-content:space-evenly;gap:.08rem;overflow:hidden}
+.r{display:flex;justify-content:space-between;align-items:baseline;gap:.3rem;font-size:.82rem;line-height:1.2;white-space:nowrap;min-width:0}
+.r>span:first-child{color:var(--mute);overflow:hidden;text-overflow:ellipsis;flex:0 1 auto;min-width:0}
+.r>b,.r>span:last-child{flex:0 0 auto}
+.r b{font-weight:780}
+.big{font-size:2.55rem;font-weight:850;line-height:.92;letter-spacing:-.04em}
+.wx{display:flex;align-items:center;gap:.45rem;min-width:0}
+.wx2{display:flex;flex-direction:column;font-size:.78rem;line-height:1.2;min-width:0}
+.wx2 b{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{border-radius:.32rem;padding:.08rem .34rem;font-size:.62rem;font-weight:850;color:#fff;background:var(--s0);white-space:nowrap;letter-spacing:.02em;text-transform:none}
+.badge.ok{background:var(--ok)}.badge.yel{background:var(--yel);color:#111}.badge.warn{background:var(--warn)}.badge.bad{background:var(--bad)}.badge.info{background:var(--info)}.badge.mutebg{background:var(--s0)}
+.act{font-size:.76rem;font-weight:780;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sp{display:inline-block;border-radius:.3rem;padding:.04rem .36rem;font-weight:850;font-size:.74rem;color:#fff;background:var(--s0);white-space:nowrap}
+.k0{background:var(--s0)}.k1{background:var(--s1)}.k2{background:var(--s2)}.k3{background:var(--s3)}.k4{background:var(--s4)}.kice{background:var(--ice)}.kn{background:var(--s0)}.k-1{background:var(--s0)}
+.c-ok{color:var(--ok)}.c-warn{color:var(--warn)}.c-bad{color:var(--bad)}.c-info{color:var(--info)}.c-yel{color:var(--yel)}
+.gauge{position:relative;height:.62rem;border-radius:.35rem;display:flex;overflow:visible;margin:.15rem 0 .1rem}
+.gauge>span{height:100%}
+.gauge>span:first-child{border-radius:.35rem 0 0 .35rem}.gauge>span:nth-child(4){border-radius:0 .35rem .35rem 0}
+.gauge>i{position:absolute;top:-.22rem;width:.3rem;height:1.06rem;margin-left:-.15rem;background:var(--ink);border-radius:.15rem;box-shadow:0 0 0 .1rem var(--card)}
+.gl{display:flex;align-items:baseline;gap:.35rem;white-space:nowrap}
+.gl .lv{font-size:1.18rem;font-weight:850}
+.f{font-size:.74rem;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini{display:flex;gap:.12rem;align-items:flex-end}
+.mini>span{flex:1 1 0;border-radius:.2rem;font-size:.55rem;text-align:center;color:#fff;font-weight:800;line-height:1.35}
+/* Bande horaire */
+#hours{flex:0 0 auto;display:grid;grid-template-columns:repeat(var(--n,8),minmax(0,1fr));background:var(--card);border:1px solid var(--line);border-radius:.6rem;overflow:hidden;cursor:pointer}
+.hc{display:flex;flex-direction:column;align-items:center;padding:.18rem 0 .14rem;font-size:.68rem;line-height:1.17;border-bottom:.25rem solid var(--s0);border-left:1px solid var(--line);min-width:0;white-space:nowrap}
+.hc:first-child{border-left:0;background:var(--card2)}
+.hc .t{font-weight:850}
+.hc .e{font-size:.92rem;line-height:1.12}
+.hc .T{font-weight:850;font-size:.84rem}
+.hc .p{color:var(--info);font-weight:750}
+.hc .w{color:var(--mute)}
+.hc.b1{border-bottom-color:var(--s1)}.hc.b2{border-bottom-color:var(--s2)}.hc.b3{border-bottom-color:var(--s3)}.hc.b4{border-bottom-color:var(--s4)}
+/* Zones */
+#zones{flex:0 0 auto;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:.2rem}
+.z{border-radius:.42rem;padding:.14rem .08rem;text-align:center;color:#fff;background:var(--s0);font-size:.62rem;line-height:1.15;cursor:pointer;min-width:0;overflow:hidden;white-space:nowrap;position:relative}
+.z b{display:block;font-size:.7rem;font-weight:850;overflow:hidden;text-overflow:ellipsis}
+.z.off{background:var(--card2);color:var(--mute);border:1px dashed var(--line)}
+.z em{position:absolute;top:0;right:0;font-style:normal;font-size:.5rem;background:rgba(0,0,0,.35);padding:0 .15rem;border-radius:0 0 0 .25rem}
+.z.k1{background:var(--s1)}.z.k2{background:var(--s2)}.z.k3{background:var(--s3)}.z.k4{background:var(--s4)}
+.z.leg{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+/* Pied */
+footer{flex:0 0 auto;display:flex;gap:.25rem;align-items:stretch}
+.fb{flex:1 1 0;border:1px solid var(--line);background:var(--card);border-radius:.5rem;padding:.32rem .1rem;font-size:.7rem;font-weight:780;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.fb .n{background:var(--bad);color:#fff;border-radius:99px;padding:0 .3rem;margin-left:.15rem;font-size:.6rem}
+.upd{font-size:.56rem;color:var(--mute);text-align:right;white-space:nowrap;line-height:1.2;align-self:center;flex:0 0 auto}
+.upd.stale{color:var(--bad);font-weight:800}
+/* Fenêtres */
+#ov{position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(3,10,20,.6);display:none;align-items:center;justify-content:center;
+  padding:max(env(safe-area-inset-top),.5rem) .45rem max(env(safe-area-inset-bottom),.5rem);z-index:10}
+#ov.on{display:flex}
+.mo{background:var(--card);color:var(--ink);border-radius:.8rem;width:min(100%,38rem);max-height:100%;display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--line)}
+.mh{display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.45rem .65rem;border-bottom:1px solid var(--line);font-weight:850;font-size:1rem}
+.mh button{border:0;background:var(--card2);border-radius:.45rem;width:2rem;height:2rem;font-size:1rem;cursor:pointer;flex:0 0 auto}
+.mb{padding:.5rem .65rem .6rem;overflow:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:.38rem;font-size:.84rem;line-height:1.3}
+.mb h4{margin:.15rem 0 0;font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.mb p{margin:0}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:.12rem .8rem}
+.g2 .r{font-size:.8rem}
+.tbl{width:100%;border-collapse:collapse;font-size:.76rem}
+.tbl td,.tbl th{padding:.12rem .2rem;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+.tbl th{color:var(--mute);font-size:.62rem;text-transform:uppercase;letter-spacing:.04em}
+.tbl tr.hl td{background:var(--card2);font-weight:850}
+.bars{display:flex;align-items:flex-end;gap:1px;height:4.2rem;border-bottom:1px solid var(--line);position:relative}
+.bars>span{flex:1 1 0;background:var(--info);border-radius:.12rem .12rem 0 0;min-height:1px}
+.bars>span.rn{background:var(--s2)}.bars>span.fz{background:var(--ice)}.bars>span.z0{background:transparent}
+.bars>.now{position:absolute;top:0;bottom:0;width:2px;background:var(--bad)}
+.bx{display:flex;justify-content:space-between;font-size:.6rem;color:var(--mute)}
+.btn{border:1px solid var(--line);background:var(--card2);border-radius:.5rem;padding:.42rem .6rem;font-weight:780;cursor:pointer}
+.btn.on{background:var(--acc);color:#fff;border-color:transparent}
+.btn.pri{background:var(--acc);color:#fff;border-color:transparent}
+.btn.dng{background:var(--bad);color:#fff;border-color:transparent}
+.bg{display:flex;flex-wrap:wrap;gap:.3rem}
+.inp{border:1px solid var(--line);background:var(--card2);border-radius:.45rem;padding:.38rem .5rem;width:100%;-webkit-user-select:text;user-select:text}
+.lnk{color:var(--acc);font-weight:750;text-decoration:none}
+.chrono{font-size:2.6rem;font-weight:850;text-align:center;letter-spacing:-.03em;line-height:1}
+.bigbtn{width:100%;padding:.8rem;font-size:1.15rem;font-weight:850;border-radius:.7rem;border:0;color:#fff;background:var(--ok);cursor:pointer}
+.bigbtn.stop{background:var(--bad)}
+.rad{position:relative;overflow:hidden;border-radius:.6rem;background:#cfd8e2;width:100%}
+.rad img{position:absolute;max-width:none;-webkit-user-drag:none}
+.rad .ov{position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none}
+.radbar{display:flex;gap:.3rem;align-items:center}
+.radbar input{flex:1}
+.sl{display:grid;grid-template-columns:7.5rem 1fr 3.2rem;align-items:center;gap:.4rem;font-size:.8rem}
+.sl input{width:100%}
+.alrt{border-left:.3rem solid var(--bad);background:var(--card2);padding:.35rem .5rem;border-radius:.35rem;white-space:pre-line}
+.alrt.warn{border-color:var(--warn)}.alrt.yel{border-color:var(--yel)}.alrt.info{border-color:var(--info)}
+/* Paysage et grands écrans */
+@media (orientation:landscape) and (max-height:620px){
+  html{font-size:calc(clamp(9px,min(1.5vw,2.7vh),18px)*var(--scale))}
+  #tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+  #zones{grid-template-columns:repeat(14,minmax(0,1fr))}
+}
+@media (min-width:900px) and (min-height:621px){
+  html{font-size:calc(clamp(12px,min(1.45vw,2.05vh),22px)*var(--scale))}
+  #tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+  #zones{grid-template-columns:repeat(14,minmax(0,1fr))}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="hdr"></header>
+  <div id="chips" data-act="alerts"></div>
+  <main id="tiles">
+    <section class="tile" id="t-wx" data-act="m-wx"></section>
+    <section class="tile" id="t-sp" data-act="m-glide"></section>
+    <section class="tile" id="t-gl" data-act="m-glide"></section>
+    <section class="tile" id="t-sn" data-act="m-snow"></section>
+    <section class="tile" id="t-co" data-act="m-cold"></section>
+    <section class="tile" id="t-dy" data-act="m-day"></section>
+  </main>
+  <div id="hours" data-act="m-hours"></div>
+  <div id="zones"></div>
+  <footer id="ftr"></footer>
+</div>
+<div id="ov"><div class="mo"><div class="mh"><span id="mt"></span><button data-act="close" aria-label="Fermer">✕</button></div><div class="mb" id="mb"></div></div></div>
+
+<script>
+'use strict';
+/* =====================================================================
+   GLISSADES DES PAYS D'EN HAUT — OUTIL D'INFO TERRAIN (employés)
+   Un seul fichier, aucune dépendance. Sources (gratuites, sans clé) :
+   - Site officiel (API WordPress) : état et vitesse de glisse par zone
+   - Open-Meteo : météo horaire au point exact du Domaine
+   - Environnement Canada (MSC GeoMet) : alertes, prévisions texte, radar
+   ===================================================================== */
+const CFG = {
+  lat: 45.8847, lon: -74.1234, tz: 'America/Toronto',
+  ecCity: 'qc-c3',                         // Saint-Sauveur (page-ville ECCC)
+  bbox: '-74.20,45.85,-74.05,45.92',        // zone d'alertes autour de Piedmont
+  site: 'https://domainedespaysdenhaut.com/wp-json/wp/v2/pages?slug=les-glissades&_fields=modified_gmt,content',
+  siteWeb: 'https://domainedespaysdenhaut.com/les-glissades/',
+  horaireWeb: 'https://domainedespaysdenhaut.com/les-glissades/planifier-votre-sortie-aux-glissades/horaire/',
+  version: '1.0'
+};
+
+/* Zones de glisse (infos fixes du site officiel; l'état et la vitesse sont lus en direct) */
+const ZONES = [
+  {id:'olympiade', nom:'Olympiade', c:'OLY',  v:'Tube', p:16, niv:'Bout de chou', rem:'Aucune', gl:'1 à 2', soir:true},
+  {id:'champion',  nom:'Champion',  c:'CHA',  v:'Tube', p:8,  niv:'Bout de chou', rem:'Tapis roulant avec dôme', gl:'1 à 2', soir:true},
+  {id:'podium',    nom:'Podium',    c:'POD',  v:'Tube', p:8,  niv:'Bout de chou', rem:'Tapis roulant avec dôme', gl:'1 à 2', soir:true},
+  {id:'boomerang', nom:'Boomerang', c:'BOO',  v:'Tube', p:4,  niv:'Débutant', rem:'Tapis roulant avec dôme', gl:'1 à 3', soir:true},
+  {id:'toboggan',  nom:'Toboggan',  c:'TOB',  v:'Tube', p:9,  niv:'Débutant à intermédiaire', rem:'Tapis avec dôme ou télésiège', gl:'1 à 6', soir:true},
+  {id:'slalom',    nom:'Slalom',    c:'SLA',  v:'Tube', p:3,  niv:'Intermédiaire', rem:'Télésiège', gl:'2 à 3', soir:true},
+  {id:'avalanche', nom:'Avalanche', c:'AVA',  v:'Tube', p:3,  niv:'Expert', rem:'Tapis roulant avec dôme', gl:'2 à 6', taille:'1,32 m (52 po)', soir:true},
+  {id:'formule 1', nom:'Formule 1', c:'F1',   v:'Tube', p:3,  niv:'Expert', rem:'Télésiège', gl:'2 à 6', taille:'1,32 m (52 po)', soir:true},
+  {id:'yeti',      nom:'Parc du Yéti', c:'YÉTI', v:'Yéti', p:24, niv:'CPE, maternelle, 1re année', rem:'Tapis roulant', gl:'1 à 6', soir:false, note:'Groupes scolaires sur réservation'},
+  {id:'rafting',   nom:'Rafting',   c:'RAFT', v:'Rafting + Tornade', p:3, niv:'Intermédiaire', rem:'Télérafting', gl:'4 à 12', soir:true},
+  {id:'tornade',   nom:'Tornade',   c:'TORN', v:'Rafting + Tornade', p:3, niv:'Expert', rem:'Télérafting', gl:'2 à 8', soir:true},
+  {id:'bobsleigh', nom:'Bobsleigh', c:'BOB',  v:'Bobsleigh + Vortex360', p:3, niv:'Intermédiaire', rem:'Tapis roulant', gl:'2 à 4', taille:'1,32 m (52 po)', casque:'Obligatoire (prêté)', soir:false},
+  {id:'vortex360', nom:'Vortex360', c:'VORT', v:'Bobsleigh + Vortex360', p:3, niv:'Expert', rem:'Tapis roulant', gl:'2 à 6', taille:'1,32 m (52 po)', casque:'Obligatoire (prêté)', soir:false}
+];
+
+/* Horaire saison 2026-2027 (site officiel). j = [dim, lun, mar, mer, jeu, ven, sam]; null = fermé */
+const H1016 = [10,16], H0920 = [9,20], H0916 = [9,16], H0917 = [9,17];
+const HORAIRE = [
+  {du:'2026-11-01', au:'2026-12-13', j:[H1016,null,null,H1016,H1016,H1016,H1016], note:'Si ouvert (date d\'ouverture à confirmer)', tbc:true},
+  {du:'2026-12-14', au:'2026-12-25', h:H1016},
+  {du:'2026-12-26', au:'2026-12-30', h:H0920, note:'Temps des Fêtes'},
+  {du:'2026-12-31', au:'2027-01-01', h:H0917, note:'Temps des Fêtes'},
+  {du:'2027-01-02', au:'2027-01-02', h:H0920, note:'Temps des Fêtes'},
+  {du:'2027-01-03', au:'2027-01-03', h:H0916, note:'Temps des Fêtes'},
+  {du:'2027-01-04', au:'2027-02-26', j:[H0916,H1016,H1016,H1016,H1016,H1016,H0920]},
+  {du:'2027-02-27', au:'2027-03-06', h:H0920, note:'Semaine de relâche'},
+  {du:'2027-03-07', au:'2027-03-07', h:H0916, note:'Semaine de relâche'},
+  {du:'2027-03-08', au:'2027-03-21', h:H1016},
+  {du:'2027-03-22', au:'2027-04-18', j:[H1016,null,null,null,null,H1016,H1016], note:'Rafting, Yéti et La Cabane seulement'}
+];
+
+/* ===================== Utilitaires ===================== */
+const $ = s => document.querySelector(s);
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+};
+const SET = Object.assign({theme:'auto', refresh:10, scale:1}, LS.get('gpdh.set', {}));
+const DEV = Object.assign({unlocked:false, sim:false, scen:'parfaite', T:null, ws:null, wg:null, snx:1, siteOpen:true, shift:0}, LS.get('gpdh.dev', {}));
+const saveSet = () => LS.set('gpdh.set', SET);
+const saveDev = () => LS.set('gpdh.dev', DEV);
+const NOW = () => Date.now() + (DEV.unlocked ? (DEV.shift || 0) : 0);
+const HOUR = 3600e3;
+const pad = n => String(n).padStart(2, '0');
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num = x => (x == null || x === '' || !isFinite(+x)) ? null : +x;
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+
+const _fp = new Intl.DateTimeFormat('en-US', {timeZone:CFG.tz, hourCycle:'h23', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', weekday:'short'});
+const WD = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+function lp(ms) {
+  const o = {};
+  for (const p of _fp.formatToParts(new Date(ms))) o[p.type] = p.value;
+  return {y:+o.year, mo:+o.month, d:+o.day, h:(+o.hour) % 24, mi:+o.minute, s:+o.second, wd:WD.indexOf(o.weekday)};
+}
+const ymd = ms => { const p = lp(ms); return p.y + '-' + pad(p.mo) + '-' + pad(p.d); };
+const hm = ms => { if (ms == null || isNaN(ms)) return '—'; const p = lp(ms); return p.h + ':' + pad(p.mi); };
+const hh = ms => { if (ms == null) return '—'; const p = lp(ms); return p.h + ' h' + (p.mi ? ' ' + pad(p.mi) : ''); };
+function tzOff(ms) { const p = lp(ms); return Date.UTC(p.y, p.mo - 1, p.d, p.h, p.mi, p.s) - Math.floor(ms / 1000) * 1000; }
+function localMs(y, mo, d, h, mi) {
+  const g = Date.UTC(y, mo - 1, d, h, mi || 0); let t = g - tzOff(g); const o2 = tzOff(t);
+  if (g - o2 !== t) t = g - o2; return t;
+}
+const JOURS = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+const MOIS = ['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+const dateTxt = ms => { const p = lp(ms); return JOURS[p.wd] + ' ' + p.d + ' ' + MOIS[p.mo - 1]; };
+function dur(ms) {
+  if (ms == null) return '—'; const m = Math.max(0, Math.round(ms / 60000));
+  if (m < 60) return m + ' min'; const h = Math.floor(m / 60), r = m % 60; return h + ' h' + (r ? ' ' + pad(r) : '');
+}
+const MINUS = '−';
+const tf = x => x == null ? '—' : String(Math.round(x)).replace('-', MINUS) + '°';
+const tf1 = x => x == null ? '—' : (Math.round(x * 10) / 10).toFixed(1).replace('.', ',').replace('-', MINUS) + '°';
+const n0 = x => x == null ? '—' : String(Math.round(x));
+const cm = x => x == null ? '—' : x < 0.05 ? '0 cm' : x < 10 ? (Math.round(x * 10) / 10).toString().replace('.', ',') + ' cm' : Math.round(x) + ' cm';
+const mm = x => x == null ? '—' : (Math.round(x * 10) / 10).toString().replace('.', ',') + ' mm';
+const DIRS = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'];
+const dirTxt = d => d == null ? '' : DIRS[Math.round(((d % 360) + 360) % 360 / 22.5) % 16];
+const visTxt = v => v == null ? '—' : v >= 20000 ? '> 20 km' : v >= 1000 ? (Math.round(v / 100) / 10).toString().replace('.', ',') + ' km' : Math.round(v / 50) * 50 + ' m';
+function interp(P, x) {
+  if (x <= P[0][0]) return P[0][1];
+  for (let i = 1; i < P.length; i++) if (x <= P[i][0]) { const [a, b] = P[i - 1], [c, d] = P[i]; return b + (d - b) * (x - a) / (c - a); }
+  return P[P.length - 1][1];
+}
+
+/* ===================== Météo : codes et calculs ===================== */
+const WMO = {0:['Ciel dégagé','☀️','🌙'],1:['Plutôt dégagé','🌤️','🌙'],2:['Partiellement nuageux','⛅','☁️'],3:['Couvert','☁️'],
+  45:['Brouillard','🌫️'],48:['Brouillard givrant','🌫️'],51:['Bruine faible','🌦️'],53:['Bruine','🌦️'],55:['Bruine forte','🌧️'],
+  56:['Bruine verglaçante','🧊'],57:['Bruine verglaçante','🧊'],61:['Pluie faible','🌧️'],63:['Pluie','🌧️'],65:['Pluie forte','🌧️'],
+  66:['Pluie verglaçante','🧊'],67:['Pluie verglaçante forte','🧊'],71:['Neige faible','🌨️'],73:['Neige','🌨️'],75:['Neige forte','❄️'],
+  77:['Neige en grains','🌨️'],80:['Averses de pluie','🌦️'],81:['Averses de pluie','🌧️'],82:['Fortes averses','🌧️'],
+  85:['Averses de neige','🌨️'],86:['Fortes averses de neige','❄️'],95:['Orage','⛈️'],96:['Orage et grêle','⛈️'],99:['Orage et grêle','⛈️']};
+const FRZ = [56,57,66,67], SNOWC = [71,73,75,77,85,86], RAINC = [51,53,55,61,63,65,80,81,82];
+function wmo(code, day) { const w = WMO[code] || ['—','·']; return {label:w[0], emoji:(day === 0 && w[2]) ? w[2] : w[1]}; }
+function windChill(T, V) { if (T == null) return null; if (V == null || T > 10 || V < 5) return T; const v = Math.pow(V, 0.16); return 13.12 + 0.6215 * T - 11.37 * v + 0.3965 * T * v; }
+function wetBulb(T, RH) {
+  if (T == null || RH == null) return null; RH = clamp(RH, 5, 99);
+  return T * Math.atan(0.151977 * Math.sqrt(RH + 8.313659)) + Math.atan(T + RH) - Math.atan(RH - 1.676331) + 0.00391838 * Math.pow(RH, 1.5) * Math.atan(0.023101 * RH) - 4.686035;
+}
+/* Icône ECCC -> code WMO approximatif (mode secours) */
+function ecToWmo(i) {
+  i = +i; const m = {0:0,1:1,2:2,3:3,10:3,30:0,31:1,32:2,33:3,6:80,36:80,7:85,15:85,8:71,37:71,38:71,16:71,17:73,18:75,
+    11:61,12:61,13:63,14:66,19:95,39:95,46:96,23:45,24:45,25:73,40:73,26:77,27:96,28:51};
+  return m[i] != null ? m[i] : 3;
+}
+
+/* ===================== Récupération des données ===================== */
+const D = {
+  om:LS.get('gpdh.c.om', null), ec:LS.get('gpdh.c.ec', null), al:LS.get('gpdh.c.al', null), site:LS.get('gpdh.c.site', null),
+  err:{}, busy:false, last:0
+};
+async function getJSON(url, ms) {
+  const c = new AbortController(); const t = setTimeout(() => c.abort(), ms || 15000);
+  try {
+    const r = await fetch(url, {signal:c.signal, cache:'no-store'});
+    if (!r.ok) { let m = 'HTTP ' + r.status; try { const j = await r.json(); if (j.reason) m += ' – ' + j.reason; } catch (e) {} throw new Error(m); }
+    return await r.json();
+  } finally { clearTimeout(t); }
+}
+function omURL() {
+  const cur = 'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,showers,snowfall,weather_code,cloud_cover,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m';
+  const hr = 'temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation_probability,precipitation,rain,showers,snowfall,snow_depth,weather_code,cloud_cover,visibility,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index,is_day,shortwave_radiation';
+  const dy = 'sunrise,sunset,temperature_2m_max,temperature_2m_min,precipitation_sum,snowfall_sum,uv_index_max,wind_gusts_10m_max';
+  return 'https://api.open-meteo.com/v1/forecast?latitude=' + CFG.lat + '&longitude=' + CFG.lon + '&current=' + cur + '&hourly=' + hr + '&daily=' + dy +
+    '&past_days=2&forecast_days=3&timezone=' + encodeURIComponent(CFG.tz) + '&timeformat=unixtime&wind_speed_unit=kmh';
+}
+function normOM(d) {
+  const h = d.hourly, H = [], g = (k, i) => (h[k] ? h[k][i] : null);
+  for (let i = 0; i < h.time.length; i++) {
+    const rain = (g('rain', i) || 0) + (g('showers', i) || 0);
+    H.push({t:h.time[i] * 1000, T:g('temperature_2m', i), RH:g('relative_humidity_2m', i), Td:g('dew_point_2m', i), app:g('apparent_temperature', i),
+      pp:g('precipitation_probability', i), pr:g('precipitation', i), rain:rain, sn:g('snowfall', i), sd:g('snow_depth', i), wc:g('weather_code', i),
+      cc:g('cloud_cover', i), vis:g('visibility', i), ws:g('wind_speed_10m', i), wd:g('wind_direction_10m', i), wg:g('wind_gusts_10m', i),
+      uv:g('uv_index', i), day:g('is_day', i), sw:g('shortwave_radiation', i)});
+  }
+  const c = d.current;
+  const C = c ? {t:c.time * 1000, T:c.temperature_2m, RH:c.relative_humidity_2m, app:c.apparent_temperature, day:c.is_day, pr:c.precipitation,
+    rain:(c.rain || 0) + (c.showers || 0), sn:c.snowfall, wc:c.weather_code, cc:c.cloud_cover, p:c.surface_pressure, ws:c.wind_speed_10m, wd:c.wind_direction_10m, wg:c.wind_gusts_10m} : null;
+  const y = d.daily, DY = [];
+  if (y && y.time) for (let i = 0; i < y.time.length; i++) DY.push({t:y.time[i] * 1000, rise:y.sunrise[i] * 1000, set:y.sunset[i] * 1000,
+    Tmax:y.temperature_2m_max[i], Tmin:y.temperature_2m_min[i], pr:y.precipitation_sum[i], sn:y.snowfall_sum[i], uv:y.uv_index_max[i], wg:y.wind_gusts_10m_max[i]});
+  return {H, C, DY, src:'Open-Meteo'};
+}
+function normEC(p) {
+  const v = o => (o && o.value) ? (o.value.fr != null ? o.value.fr : o.value.en) : null;
+  const cc = p.currentConditions || {};
+  const cur = {t:Date.parse((cc.timestamp && (cc.timestamp.fr || cc.timestamp.en)) || '') || null, T:num(v(cc.temperature)), RH:num(v(cc.relativeHumidity)),
+    ws:num(v(cc.wind && cc.wind.speed)), wg:num(v(cc.wind && cc.wind.gust)), wd:num(v(cc.wind && cc.wind.bearing)), dirTxt:v(cc.wind && cc.wind.direction),
+    cond:cc.condition ? cc.condition.fr : null, icon:cc.iconCode ? cc.iconCode.value : null, wchill:num(v(cc.windChill)), Td:num(v(cc.dewpoint)),
+    p:num(v(cc.pressure)), station:v(cc.station)};
+  const fc = ((p.forecastGroup && p.forecastGroup.forecasts) || []).map(f => ({n:f.period && f.period.textForecastName ? f.period.textForecastName.fr : '', txt:f.textSummary ? f.textSummary.fr : ''}));
+  const hf = ((p.hourlyForecastGroup && p.hourlyForecastGroup.hourlyForecasts) || []).map(h => ({t:Date.parse(h.timestamp), T:num(v(h.temperature)),
+    cond:h.condition ? h.condition.fr : '', icon:h.iconCode ? h.iconCode.value : null, lop:num(v(h.lop)), ws:num(v(h.wind && h.wind.speed)), wchill:num(v(h.windChill))}));
+  const rs = p.riseSet || {};
+  return {cur, fc, hf, rise:Date.parse((rs.sunrise && (rs.sunrise.fr || rs.sunrise.en)) || '') || null, set:Date.parse((rs.sunset && (rs.sunset.fr || rs.sunset.en)) || '') || null,
+    upd:Date.parse(p.lastUpdated || '') || null, nom:p.name ? p.name.fr : 'Saint-Sauveur'};
+}
+function normAlerts(d) {
+  const seen = new Map();
+  for (const f of (d.features || [])) {
+    const p = f.properties || {}; if (p.status_en === 'ended') continue;
+    const key = (p.alert_name_fr || '') + '|' + (p.alert_text_fr || '').slice(0, 120);
+    if (seen.has(key)) continue;
+    seen.set(key, {nom:cap(p.alert_name_fr || p.alert_name_en || 'Alerte'), type:p.alert_type, col:p.risk_colour_en, txt:p.alert_text_fr || p.alert_text_en || '',
+      zone:p.feature_name_fr, exp:Date.parse(p.expiration_datetime || '') || null, deb:Date.parse(p.validity_datetime || '') || null, fin:Date.parse(p.event_end_datetime || '') || null});
+  }
+  return [...seen.values()];
+}
+/* Lecture de la page officielle : HTML -> lignes de texte -> données */
+function decodeEnt(s) {
+  const N = {amp:'&', lt:'<', gt:'>', quot:'"', apos:"'", nbsp:' ', rsquo:'’', lsquo:'‘', laquo:'«', raquo:'»', eacute:'é', egrave:'è', agrave:'à', ecirc:'ê', ccedil:'ç', ocirc:'ô', icirc:'î', ucirc:'û', hellip:'…', ndash:'–', mdash:'—', deg:'°'};
+  return s.replace(/&#x([0-9a-f]+);/gi, (m, h) => String.fromCodePoint(parseInt(h, 16))).replace(/&#(\d+);/g, (m, n) => String.fromCodePoint(+n))
+    .replace(/&([a-z]+);/gi, (m, n) => N[n.toLowerCase()] != null ? N[n.toLowerCase()] : m);
+}
+function htmlLines(html) {
+  let s = html.replace(/<(script|style|noscript|svg|template)\b[\s\S]*?<\/\1>/gi, ' ');
+  s = s.replace(/<br\s*\/?>/gi, '\n').replace(/<\/(p|li|h[1-6]|div|td|th|tr|ul|ol|section|article|header|footer|figure|figcaption|button)>/gi, '\n').replace(/<li\b[^>]*>/gi, '\n');
+  s = decodeEnt(s.replace(/<[^>]+>/g, ' '));
+  return s.split('\n').map(l => l.replace(/[\s ]+/g, ' ').trim()).filter(Boolean);
+}
+const FRAC = /^(\d+)\s*\/\s*(\d+)$/;
+const frac = s => { const m = FRAC.exec(String(s || '').trim()); return m ? {o:+m[1], t:+m[2]} : null; };
+function parseSite(html) {
+  const L = htmlLines(html), out = {pistes:null, rem:null, statut:'', vers:[], zones:{}};
+  for (let i = 1; i < L.length; i++) {
+    if (!out.pistes && /^pistes ouvertes$/i.test(L[i]) && frac(L[i - 1])) out.pistes = frac(L[i - 1]);
+    if (!out.rem && /^remont[ée]es ouvertes$/i.test(L[i]) && frac(L[i - 1])) out.rem = frac(L[i - 1]);
+  }
+  const a = L.findIndex(l => /^aujourd/i.test(l));
+  if (a >= 0) { const b = []; for (let j = a + 1; j < Math.min(L.length, a + 6) && !frac(L[j]); j++) b.push(L[j]); out.statut = b.join(' '); }
+  const zStart = L.findIndex(l => /carte des pistes|^zone olympiade$/i.test(l));
+  let cv = null;
+  for (let i = 0; i < (zStart > 0 ? zStart : L.length); i++) {
+    const l = L[i];
+    if (/^(versant .+|parc du y[ée]ti)$/i.test(l) && frac(L[i + 1])) { cv = {nom:l.replace(/^versant /i, ''), fr:frac(L[i + 1]), vit:[]}; out.vers.push(cv); i++; continue; }
+    const m = /^vitesse de glisse\s*(.*)$/i.exec(l);
+    if (m && cv && L[i + 1]) { cv.vit.push({lbl:m[1].trim() || cv.nom, val:L[i + 1]}); i++; }
+  }
+  const KEYS = {'etat des pistes':'etat', 'pistes ouvertes':'pistes', 'vitesse de glisse':'vit', 'glissade de soiree':'soir', 'niveau de glisse':'niv', 'type de remontee':'rem', 'nombre de glisseurs':'gl', 'casque':'casque', 'grandeur minimale':'taille'};
+  for (let i = 0; i < L.length; i++) {
+    if (!/^(zone .+|parc du y[ée]ti)$/i.test(L[i])) continue;
+    if (!L.slice(i + 1, i + 4).some(x => /conditions de glisse/i.test(x))) continue;
+    const zn = norm(L[i].replace(/^zone /i, '')), z = ZONES.find(Z => zn === Z.id || zn.includes(Z.id));
+    if (!z) continue;
+    const rec = {};
+    for (let j = i + 1; j < Math.min(L.length, i + 40); j++) {
+      if (/^(zone .+|parc du y[ée]ti)$/i.test(L[j]) && j > i + 1) break;
+      const m = /^([^:]{2,40}?)\s*:\s*(.+)$/.exec(L[j]); if (!m) continue;
+      const k = KEYS[norm(m[1])]; if (k && rec[k] == null) rec[k] = m[2].trim();
+    }
+    if (rec.pistes) rec.fr = frac(rec.pistes);
+    out.zones[z.id] = rec;
+  }
+  return out;
+}
+/* Normalisation des vitesses officielles */
+function spd(v) {
+  if (v == null || v === '') return {k:'n', n:'—'};
+  const s = norm(v);
+  if (/ferm|closed/.test(s)) return {k:0, n:'Fermé'};
+  if (/reserv/.test(s)) return {k:-1, n:'Réservation'};
+  if (/tres rapide|very fast|extreme/.test(s)) return {k:4, n:cap(v.trim())};
+  if (/rapide|fast/.test(s)) return {k:3, n:cap(v.trim())};
+  if (/moy|moder|normal|medium/.test(s)) return {k:2, n:cap(v.trim())};
+  if (/lent|slow/.test(s)) return {k:1, n:cap(v.trim())};
+  return {k:'n', n:cap(v.trim()).slice(0, 16)};
+}
+async function fetchAll() {
+  if (D.busy) return; D.busy = true; renderHeader(); const t = Date.now();
+  const jobs = [
+    getJSON(omURL()).then(d => { D.om = {t, d:normOM(d)}; LS.set('gpdh.c.om', D.om); D.err.om = null; }).catch(e => { D.err.om = e.message || String(e); }),
+    getJSON('https://api.weather.gc.ca/collections/citypageweather-realtime/items/' + CFG.ecCity + '?f=json&lang=fr').then(d => { D.ec = {t, d:normEC(d.properties || {})}; LS.set('gpdh.c.ec', D.ec); D.err.ec = null; }).catch(e => { D.err.ec = e.message || String(e); }),
+    getJSON('https://api.weather.gc.ca/collections/weather-alerts/items?f=json&lang=fr&limit=100&bbox=' + CFG.bbox).then(d => { D.al = {t, d:normAlerts(d)}; LS.set('gpdh.c.al', D.al); D.err.al = null; }).catch(e => { D.err.al = e.message || String(e); }),
+    getJSON(CFG.site + '&_=' + Math.floor(t / 60000), 20000).then(d => {
+      const p = Array.isArray(d) ? d[0] : d; if (!p || !p.content) throw new Error('Page introuvable');
+      D.site = {t, mod:Date.parse((p.modified_gmt || '') + 'Z') || null, d:parseSite(p.content.rendered || '')}; LS.set('gpdh.c.site', D.site); D.err.site = null;
+    }).catch(e => { D.err.site = e.message || String(e); })
+  ];
+  await Promise.allSettled(jobs);
+  D.busy = false; D.last = Date.now(); render();
+  if ($('#ov').classList.contains('on') && $('#mt').textContent.startsWith('DEV')) mDev();
+}
+
+/* ===================== Mode DEV : simulation ===================== */
+const SCEN = {
+  parfaite:  {nom:'Journée parfaite', T:-7,  amp:3, ws:8,  wg:15, RH:70, f:k => ({cc:15})},
+  tempete:   {nom:'Tempête de neige', T:-9,  amp:1, ws:28, wg:55, RH:93, f:k => (k > -8 && k < 14) ? {sn:2, wc:75, vis:400, cc:100} : {cc:90}},
+  verglas:   {nom:'Verglas',          T:-1,  amp:1, ws:15, wg:30, RH:97, f:k => k < -6 && k > -30 ? {Tset:3, rain:1.2, wc:61, cc:100} : (k >= -6 && k < 6 ? {rain:1, wc:66, cc:100, vis:3000} : {cc:80})},
+  froid:     {nom:'Froid extrême',    T:-34, amp:3, ws:30, wg:45, RH:60, f:k => ({cc:5})},
+  redoux:    {nom:'Redoux puis regel', T:4,  amp:1, ws:12, wg:25, RH:95, f:k => k <= 2 && k > -24 ? {rain:k > -6 ? 1 : 0.3, wc:k > -6 ? 61 : 3, cc:100} : (k > 2 ? {Tset:Math.max(-9, 4 - (k - 2) * 1.6), cc:40} : {})},
+  poudrerie: {nom:'Poudrerie',        T:-15, amp:2, ws:42, wg:68, RH:75, f:k => k > -24 && k < -4 ? {sn:0.5, wc:71, cc:100} : (k >= -4 && k < 8 ? {vis:800, cc:50} : {cc:40})},
+  neige:     {nom:'Neige cet après-midi', T:-5, amp:3, ws:10, wg:20, RH:80, f:k => k >= 3 && k < 11 ? {sn:1.2, wc:73, cc:100} : {cc:60}},
+  printemps: {nom:'Printemps ensoleillé', T:6, amp:6, ws:8, wg:18, RH:55, f:k => ({cc:5, uvx:1})}
+};
+function simData() {
+  const sc = SCEN[DEV.scen] || SCEN.parfaite, now = NOW(), t0 = Math.floor(now / HOUR) * HOUR, h0 = lp(t0).h;
+  const T0 = DEV.T != null ? DEV.T : sc.T, ws0 = DEV.ws != null ? DEV.ws : sc.ws, wg0 = DEV.wg != null ? DEV.wg : sc.wg, snx = DEV.snx;
+  const dT = T0 - sc.T, H = [];
+  for (let k = -48; k <= 72; k++) {
+    const t = t0 + k * HOUR, lh = lp(t).h, o = sc.f(k) || {};
+    const di = sc.amp * (Math.cos(2 * Math.PI * (lh - 15) / 24) - Math.cos(2 * Math.PI * (h0 - 15) / 24));
+    let T = (o.Tset != null ? o.Tset + dT : T0 + di);
+    const day = (lh >= 7 && lh < 17) ? 1 : 0, sunk = Math.max(0, Math.sin(Math.PI * (lh - 7) / 10));
+    const sn = (o.sn || 0) * snx, rain = o.rain || 0;
+    let wc = o.wc != null ? o.wc : (o.cc > 85 ? 3 : o.cc > 50 ? 2 : o.cc > 20 ? 1 : 0);
+    if (sn > 0 && o.wc == null) wc = 73; if (o.sn && snx === 0) wc = 3;
+    H.push({t, T, RH:sc.RH, Td:T - (100 - sc.RH) / 5, app:windChill(T, ws0), pp:(sn || rain) ? 90 : 5, pr:rain + sn / 1.2, rain, sn,
+      sd:0.4, wc, cc:o.cc != null ? o.cc : 50, vis:o.vis || 24000, ws:ws0 * (0.85 + 0.3 * Math.random()), wd:290, wg:wg0 * (0.85 + 0.3 * Math.random()),
+      uv:day ? sunk * (o.uvx ? 5 : 2) : 0, day, sw:day ? sunk * (o.uvx ? 750 : 420) * (1 - (o.cc || 0) / 130) : 0});
+  }
+  const i0 = 48, c = H[i0];
+  const C = {t:now, T:c.T, RH:c.RH, app:c.app, day:c.day, pr:c.pr, rain:c.rain, sn:c.sn, wc:c.wc, cc:c.cc, p:1015, ws:ws0, wd:290, wg:wg0};
+  const DY = [];
+  for (let d = -2; d <= 2; d++) {
+    const p = lp(now + d * 24 * HOUR), dt = localMs(p.y, p.mo, p.d, 0, 0);
+    const day = H.filter(x => x.t >= dt && x.t < dt + 24 * HOUR);
+    DY.push({t:dt, rise:localMs(p.y, p.mo, p.d, 7, 12), set:localMs(p.y, p.mo, p.d, 16, 25), Tmax:Math.max(...day.map(x => x.T)), Tmin:Math.min(...day.map(x => x.T)),
+      pr:day.reduce((a, x) => a + x.pr, 0), sn:day.reduce((a, x) => a + x.sn, 0), uv:Math.max(...day.map(x => x.uv)), wg:Math.max(...day.map(x => x.wg))});
+  }
+  return {H, C, DY, src:'Simulation : ' + sc.nom};
+}
+function simSite(glv) {
+  const zones = {}; const open = DEV.siteOpen;
+  for (const z of ZONES) {
+    const o = open ? (z.id === 'yeti' ? 0 : z.p) : 0;
+    zones[z.id] = {etat:open ? 'ouvert' : 'fermé', fr:{o, t:z.p}, vit:open ? (z.id === 'yeti' ? 'sur réservation' : glv) : 'fermé', soir:z.soir ? 'disponible' : 'non disponible'};
+  }
+  const tot = ZONES.reduce((a, z) => a + z.p, 0), op = open ? tot - 24 : 0;
+  return {t:NOW(), mod:NOW(), sim:true, d:{pistes:{o:op, t:90}, rem:{o:open ? 4 : 0, t:6}, statut:open ? 'Les Glissades sont ouvertes.' : 'Les Glissades sont fermées.',
+    vers:[{nom:'Tube', fr:{o:open ? 54 : 0, t:54}, vit:[{lbl:'Tube', val:open ? glv : 'fermé'}]},
+      {nom:'Rafting + Tornade', fr:{o:open ? 6 : 0, t:6}, vit:[{lbl:'Rafting', val:open ? glv : 'fermé'}, {lbl:'Tornade', val:open ? glv : 'fermé'}]},
+      {nom:'Bobsleigh + Vortex360', fr:{o:open ? 6 : 0, t:6}, vit:[{lbl:'Bobsleigh', val:open ? glv : 'fermé'}, {lbl:'Vortex360', val:open ? glv : 'fermé'}]}], zones}};
+}
+
+/* ===================== Analyse : indices et recommandations ===================== */
+/* Courbe vitesse/température de la neige (indice 0-100). Pic vers -4 °C; neige sèche très froide = accroche; > 0 °C = neige mouillée. */
+const TCURVE = [[-35,36],[-25,44],[-18,54],[-12,63],[-7,71],[-4,77],[-2,77],[-1,73],[0,64],[1,53],[2,45],[4,37],[8,30],[15,24]];
+const GLV = [{max:38, k:1, n:'Lente'}, {max:56, k:2, n:'Modérée'}, {max:76, k:3, n:'Rapide'}, {max:999, k:4, n:'Très rapide'}];
+const glv = s => GLV.find(g => s < g.max);
+function rng(H, a, b) { const out = []; for (let j = Math.max(0, a); j <= Math.min(H.length - 1, b); j++) out.push(H[j]); return out; }
+function sumK(arr, k) { let s = 0, any = false; for (const x of arr) if (x[k] != null) { s += x[k]; any = true; } return any ? s : null; }
+function maxK(arr, k) { let m = null; for (const x of arr) if (x[k] != null && (m == null || x[k] > m)) m = x[k]; return m; }
+function glideAt(H, i) {
+  const h = H[i]; if (!h || h.T == null) return null;
+  const F = [], base = interp(TCURVE, h.T); let s = base;
+  F.push({ico:'🌡️', txt:'Température ' + tf(h.T) + (h.T < -18 ? ' : neige sèche, accroche' : h.T > 0.5 ? ' : neige mouillée' : h.T >= -5 ? ' : neige dure, rapide' : h.T >= -10 ? ' : favorable' : ''), v:Math.round(base - 60)});
+  const s6 = sumK(rng(H, i - 5, i), 'sn'), s24 = sumK(rng(H, i - 23, i - 6), 'sn');
+  if (s6 != null) {
+    const fresh = s6 + 0.4 * (s24 || 0);
+    if (fresh >= 0.3) { const p = -Math.min(38, fresh * 6); s += p; F.push({ico:'❄️', txt:'Neige fraîche ' + cm(s6 + (s24 || 0)) + ' en 24 h', v:Math.round(p)}); }
+  }
+  const frz = rng(H, i - 23, i).some(x => FRZ.includes(x.wc));
+  const maxPrev = maxK(rng(H, i - 36, i - 1), 'T'), liq = sumK(rng(H, i - 36, i), 'rain') || 0;
+  let ice = false;
+  const covered = s6 != null && (s6 + 0.4 * (s24 || 0)) >= 1.5;   // croûte recouverte de neige fraîche
+  if (frz && h.T <= 0.5) {
+    if (covered) { s += 6; F.push({ico:'🧊', txt:'Verglas sous la neige fraîche', v:6}); }
+    else { s += 22; ice = true; F.push({ico:'🧊', txt:'Pluie verglaçante récente : surface glacée', v:22}); }
+  } else if (h.T <= -1 && maxPrev != null && (maxPrev >= 1 || liq >= 1)) {
+    const p = Math.round(Math.min(20, 8 + Math.max(0, maxPrev) * 1.5 + liq * 2));
+    if (covered) { s += 5; F.push({ico:'🧊', txt:'Croûte glacée sous la neige fraîche', v:5}); }
+    else { s += p; ice = true; F.push({ico:'🧊', txt:'Regel après dégel : croûte glacée', v:p}); }
+  }
+  if ((h.rain || 0) >= 0.2 && h.T > 0) { s -= 10; F.push({ico:'🌧️', txt:'Pluie : neige lourde et collante', v:-10}); }
+  if (h.day && h.sw > 320 && h.T > -6) { const p = -Math.round(Math.min(12, (h.sw - 320) / 30)); if (p < 0) { s += p; F.push({ico:'☀️', txt:'Soleil fort : la neige ramollit', v:p}); } }
+  if (h.ws >= 35 && s6 != null && (s6 + (s24 || 0)) >= 1) { s -= 4; F.push({ico:'💨', txt:'Vent : neige soufflée dans les pistes', v:-4}); }
+  s = clamp(Math.round(s), 3, 100);
+  return {s, lv:glv(s), F, ice};
+}
+const RISK = [
+  {min:-9,  n:'Faible',     cls:'ok',   frost:'Peu probable', txt:'Inconfort léger. Habillement d\'hiver normal.'},
+  {min:-27, n:'Modéré',     cls:'yel',  frost:'Peu probable', txt:'Risque d\'hypothermie si exposition prolongée sans protection. Couvrir la peau.'},
+  {min:-39, n:'Élevé',      cls:'warn', frost:'10 à 30 min',  txt:'La peau exposée peut geler en 10 à 30 minutes. Surveiller nez, joues, oreilles, doigts.'},
+  {min:-47, n:'Très élevé', cls:'bad',  frost:'5 à 10 min',   txt:'La peau exposée peut geler en 5 à 10 minutes. Couvrir toute la peau, réduire l\'exposition.'},
+  {min:-54, n:'Grave',      cls:'bad',  frost:'2 à 5 min',    txt:'La peau exposée peut geler en 2 à 5 minutes. Limiter fortement le travail extérieur.'},
+  {min:-999, n:'Extrême',   cls:'bad',  frost:'< 2 min',      txt:'La peau exposée peut geler en moins de 2 minutes. Danger : rester à l\'abri.'}
+];
+const riskOf = wc => wc == null ? null : RISK.find(r => Math.round(wc) >= r.min);
+/* Horaire réchauffement/travail ACGIH (quart de 4 h) : [max min de travail / nb de pauses de 10 min] */
+const ACG = [['N','N','75/2','55/3','40/4'], ['N','75/2','55/3','40/4','30/5'], ['75/2','55/3','40/4','30/5','X'], ['55/3','40/4','30/5','X','X'], ['40/4','30/5','X','X','X'], ['30/5','X','X','X','X'], ['X','X','X','X','X']];
+const ACG_T = ['−26 à −28', '−29 à −31', '−32 à −34', '−35 à −37', '−38 à −39', '−40 à −42', '−43 et moins'];
+const ACG_W = ['Vent nul', '8 km/h', '16 km/h', '24 km/h', '32 km/h +'];
+function acgih(T, ws) {
+  if (T == null) return {short:'—', long:'—'};
+  const t = Math.round(T);
+  if (t > -26) return {short:'Normales', long:'Pauses normales (température au-dessus de −26 °C).', r:-1, c:-1};
+  const r = t >= -28 ? 0 : t >= -31 ? 1 : t >= -34 ? 2 : t >= -37 ? 3 : t >= -39 ? 4 : t >= -42 ? 5 : 6;
+  const w = ws || 0, c = w < 5 ? 0 : w <= 8 ? 1 : w <= 16 ? 2 : w <= 24 ? 3 : 4, v = ACG[r][c];
+  if (v === 'N') return {short:'Normales', long:'Pauses normales (1 pause chaude par 4 h).', r, c};
+  if (v === 'X') return {short:'Cesser (non urgent)', long:'Cesser tout travail extérieur non urgent.', r, c};
+  const [m, b] = v.split('/');
+  return {short:m + ' min · ' + b + ' pauses', long:'Travail continu max ' + m + ' min, puis pause de 10 min au chaud (' + b + ' pauses par 4 h).', r, c};
+}
+function snowMk(tw) {
+  if (tw == null) return {n:'—', cls:''};
+  if (tw <= -7) return {n:'Excellente', cls:'c-ok'};
+  if (tw <= -4) return {n:'Bonne', cls:'c-ok'};
+  if (tw <= -2) return {n:'Marginale', cls:'c-warn'};
+  return {n:'Impossible', cls:'mute'};
+}
+const uvTxt = u => u == null ? '' : u < 3 ? 'faible' : u < 6 ? 'modéré' : u < 8 ? 'élevé' : 'très élevé';
+function schedFor(ms) {
+  const k = ymd(ms), wd = lp(ms).wd;
+  for (const r of HORAIRE) if (k >= r.du && k <= r.au) { const v = r.j ? r.j[wd] : r.h; return {o:v ? v[0] : null, f:v ? v[1] : null, note:r.note || '', tbc:!!r.tbc}; }
+  return null;
+}
+function schedMs(ms) {
+  const s = schedFor(ms); if (!s || s.o == null) return s;
+  const p = lp(ms); return Object.assign({}, s, {om:localMs(p.y, p.mo, p.d, s.o, 0), fm:localMs(p.y, p.mo, p.d, s.f, 0)});
+}
+function nextOpen(ms) {
+  for (let d = 1; d <= 60; d++) { const p = lp(ms + d * 24 * HOUR), t = localMs(p.y, p.mo, p.d, 12, 0), s = schedMs(t); if (s && s.o != null) return s; }
+  return null;
+}
+const hrsTxt = s => s.o + ' h – ' + s.f + ' h';
+
+/* ===================== Modèle de vue ===================== */
+function series() {
+  if (DEV.unlocked && DEV.sim) return simData();
+  const now = NOW(), covers = H => H && H.length && H[0].t <= now + HOUR && H[H.length - 1].t >= now - HOUR;
+  if (D.om && D.om.d && covers(D.om.d.H)) return D.om.d;
+  if (D.ec && D.ec.d && D.ec.d.hf && D.ec.d.hf.length && D.ec.d.hf[D.ec.d.hf.length - 1].t > now) {
+    const e = D.ec.d, c = e.cur;
+    const H = e.hf.map(h => ({t:h.t, T:h.T, RH:null, ws:h.ws, wg:null, wc:ecToWmo(h.icon), pp:h.lop, sn:null, rain:null, day:null, sw:null, vis:null, uv:null, cond:h.cond}));
+    const C = c && c.T != null ? {t:c.t, T:c.T, RH:c.RH, ws:c.ws, wg:c.wg, wd:c.wd, wc:ecToWmo(c.icon), label:c.cond, sn:null, rain:null, p:c.p != null ? c.p * 10 : null} : null;
+    const today = H.filter(x => ymd(x.t) === ymd(NOW()));
+    const DY = [{t:NOW(), rise:e.rise, set:e.set, Tmax:maxK(today, 'T'), Tmin:today.length ? Math.min(...today.map(x => x.T)) : null}];
+    return {H, C, DY, src:'Environnement Canada (secours)', lim:true};
+  }
+  return null;
+}
+function build() {
+  const now = NOW(), S = series(), V = {now, S, src:S ? S.src : null};
+  const H = S ? S.H : [];
+  let i0 = -1; for (let i = 0; i < H.length; i++) if (H[i].t <= now) i0 = i;
+  if (i0 < 0 && H.length && H[0].t - now < HOUR) i0 = 0;
+  V.i0 = i0;
+  const hi = i0 >= 0 ? H[i0] : null;
+  /* Conditions actuelles */
+  if (hi) {
+    const C = (S.C && Math.abs(S.C.t - now) < 3 * HOUR) ? S.C : hi;
+    const T = C.T != null ? C.T : hi.T, ws = C.ws != null ? C.ws : hi.ws, wg = C.wg != null ? C.wg : hi.wg;
+    const code = C.wc != null ? C.wc : hi.wc, day = C.day != null ? C.day : hi.day, w = wmo(code, day);
+    V.cur = {T, ws, wg, wd:C.wd != null ? C.wd : hi.wd, RH:C.RH != null ? C.RH : hi.RH, code, label:C.label || w.label, emoji:w.emoji, vis:hi.vis, cc:C.cc != null ? C.cc : hi.cc,
+      p:C.p, Td:hi.Td, feel:windChill(T, ws), sn:C.sn != null ? C.sn : hi.sn, rain:C.rain != null ? C.rain : hi.rain, uv:hi.uv, sd:hi.sd};
+    if (T != null && T > 20 && C.app != null) V.cur.feel = C.app;
+  }
+  const dk = ymd(now), today = S && S.DY ? (S.DY.find(d => ymd(d.t + 12 * HOUR) === dk || ymd(d.t) === dk) || null) : null;
+  V.today = today || {};
+  const ec = D.ec && D.ec.d;
+  V.rise = V.today.rise || (ec && ec.rise) || null; V.set = V.today.set || (ec && ec.set) || null;
+  if (V.rise && ymd(V.rise) !== dk) V.rise = null; if (V.set && ymd(V.set) !== dk) V.set = null;
+  /* Glisse estimée */
+  if (hi) {
+    const g = glideAt(H, i0); V.glide = g;
+    const nx = []; for (let i = i0; i <= Math.min(H.length - 1, i0 + 24); i++) { const x = glideAt(H, i); if (x) nx.push({t:H[i].t, s:x.s, lv:x.lv, ice:x.ice}); }
+    V.glideH = nx;
+    if (g && nx.length > 3) {
+      const d = nx[3].s - g.s; V.glTrend = d >= 7 ? {a:'↗', n:'Accélère'} : d <= -7 ? {a:'↘', n:'Ralentit'} : {a:'→', n:'Stable'};
+      const ch = nx.slice(1, 13).find(x => x.lv.k !== g.lv.k); V.glChange = ch ? {t:ch.t, lv:ch.lv} : null;
+    }
+  }
+  /* Déneigement */
+  if (hi) {
+    const past = H.filter(x => x.t > now - 24 * HOUR && x.t <= now), p6 = past.filter(x => x.t > now - 6 * HOUR), p12 = past.filter(x => x.t > now - 12 * HOUR);
+    const fut = H.filter(x => x.t > now && x.t <= now + 24 * HOUR), f12 = fut.filter(x => x.t <= now + 12 * HOUR), f6 = fut.filter(x => x.t <= now + 6 * HOUR);
+    const c = V.cur, sn = {};
+    sn.p6 = sumK(p6, 'sn'); sn.p24 = sumK(past, 'sn'); sn.n6 = sumK(f6, 'sn'); sn.n12 = sumK(f12, 'sn'); sn.n24 = sumK(fut, 'sn');
+    sn.rate = c.sn; sn.snowing = (c.sn != null && c.sn >= 0.1) || SNOWC.includes(c.code);
+    const st = fut.find(x => (x.sn || 0) >= 0.1 || (x.sn == null && SNOWC.includes(x.wc)));
+    sn.start = (!sn.snowing && st) ? st.t : null;
+    if (sn.snowing || st) { const from = sn.snowing ? 0 : fut.indexOf(st); let e = null; for (let j = from; j < fut.length; j++) if (!((fut[j].sn || 0) >= 0.1)) { e = fut[j].t; break; } sn.end = e; }
+    sn.frzNow = FRZ.includes(c.code); sn.frzPast = p6.some(x => FRZ.includes(x.wc)); sn.frzNext = f12.some(x => FRZ.includes(x.wc));
+    sn.rainNow = RAINC.includes(c.code) || (c.rain || 0) >= 0.2; sn.rainN12 = sumK(f12, 'rain');
+    const thaw = (maxK(p12, 'T') != null && maxK(p12, 'T') >= 0.5) || (sumK(p12, 'rain') || 0) >= 0.5;
+    sn.iceNow = c.T != null && c.T <= -0.5 && thaw;
+    sn.refreeze = null; if (c.T != null && c.T > 0) { const r = f12.find(x => x.T != null && x.T <= -0.5); if (r) sn.refreeze = r.t; }
+    sn.poudNow = c.T != null && c.T <= -3 && ((c.ws || 0) >= 30 || (c.wg || 0) >= 50) && ((sn.p24 || 0) >= 2 || sn.snowing);
+    let cum = sn.p24 || 0; sn.poudNext = null;
+    for (const x of f12) { cum += x.sn || 0; if (!sn.poudNow && x.T <= -3 && ((x.ws || 0) >= 30 || (x.wg || 0) >= 50) && cum >= 2) { sn.poudNext = x.t; break; } }
+    sn.depth = c.sd != null ? c.sd * 100 : null;
+    let lv = 'ok';
+    if ((sn.n12 || 0) >= 1 || sn.frzNext || sn.poudNext || sn.refreeze || (sn.p24 || 0) >= 5) lv = 'warn';
+    if ((sn.p6 || 0) >= 2 || (sn.rate || 0) >= 0.5 || sn.frzNow || sn.frzPast || sn.iceNow || sn.poudNow) lv = 'bad';
+    sn.lv = lv; sn.lvTxt = lv === 'bad' ? 'REQUIS' : lv === 'warn' ? 'À PRÉVOIR' : 'OK';
+    const A = [];
+    if (sn.frzNow || sn.frzPast) A.push('Verglas : abrasif sur escaliers, allées et stationnement');
+    else if (sn.iceNow) A.push('Regel : surfaces glacées, abrasif sur allées et escaliers');
+    if ((sn.rate || 0) >= 0.5 || (sn.p6 || 0) >= 2) A.push('Déneiger : allées, escaliers, quais de tapis, stationnement');
+    else if (sn.snowing) A.push('Neige faible : surveiller escaliers et quais de tapis');
+    if (sn.poudNow) A.push('Poudrerie : congères aux accès et fins de piste');
+    if (sn.start) A.push('Neige dès ' + hh(sn.start) + ' (≈ ' + cm(sn.n12) + ' / 12 h) : prévoir l\'équipe');
+    if (sn.refreeze) A.push('Regel vers ' + hh(sn.refreeze) + ' : prévoir abrasif');
+    if (sn.frzNext && !sn.frzNow) A.push('Verglas prévu : préparer abrasif et sel');
+    if (sn.poudNext) A.push('Poudrerie possible vers ' + hh(sn.poudNext));
+    if ((sn.p24 || 0) >= 5 && !A.length) A.push('Finition : bords de pistes, sorties de tapis, dépôt à tubes');
+    if (!A.length) A.push(S.lim ? 'Données de neige limitées (mode secours)' : 'Rien à prévoir — conditions sèches');
+    sn.A = A; V.snow = sn;
+  }
+  /* Froid et sécurité */
+  if (hi) {
+    const c = V.cur, co = {wc:c.feel, risk:riskOf(c.feel), work:acgih(c.T, c.ws)};
+    const fut = H.filter(x => x.t > now && x.t <= now + 12 * HOUR && x.T != null);
+    let w = null; for (const x of fut) { const v = windChill(x.T, x.ws); if (w == null || v < w.v) w = {v, t:x.t}; }
+    co.worst = w; co.uv = c.uv; co.uvmax = V.today.uv != null ? V.today.uv : maxK(H.filter(x => ymd(x.t) === dk), 'uv');
+    V.cold = co;
+  }
+  /* Journée : horaire, soleil, fabrication de neige */
+  const sc = schedMs(now), dy = {s:sc};
+  if (!sc) { const n = nextOpen(now); dy.state = 'Hors saison'; dy.cls = 'mutebg'; dy.txt = n ? (n.tbc ? 'Ouverture de la saison à confirmer' : 'Prochaine ouverture : ' + dateTxt(n.om)) : 'Saison terminée'; }
+  else if (sc.o == null) { const n = nextOpen(now); dy.state = 'Fermé auj.'; dy.cls = 'mutebg'; dy.txt = n ? 'Prochaine ouverture : ' + dateTxt(n.om) + ' ' + n.o + ' h' : ''; }
+  else if (now < sc.om) { dy.state = 'Avant ouverture'; dy.cls = 'info'; dy.lbl = 'Ouverture dans'; dy.cd = dur(sc.om - now); }
+  else if (now < sc.fm) { dy.state = 'Ouvert'; dy.cls = 'ok'; dy.lbl = 'Fermeture dans'; dy.cd = dur(sc.fm - now); }
+  else { const n = nextOpen(now); dy.state = 'Terminé'; dy.cls = 'mutebg'; dy.lbl = 'Prochaine ouverture'; dy.cd = n ? (ymd(n.om) === ymd(now + 24 * HOUR) ? 'demain ' + n.o + ' h' : dateTxt(n.om)) : '—'; }
+  if (V.set && sc && sc.fm && sc.fm > V.set) dy.light = {lbl:'Éclairage pistes dès', v:hm(V.set - 15 * 60000)};
+  else if (V.set) dy.light = {lbl:'Noirceur vers', v:hm(V.set + 30 * 60000)};
+  if (hi) {
+    const tw = wetBulb(V.cur.T, V.cur.RH); dy.tw = tw; dy.snm = snowMk(tw);
+    const fut = H.filter(x => x.t > now && x.t <= now + 24 * HOUR).map(x => ({t:x.t, tw:wetBulb(x.T, x.RH)}));
+    const good = x => x.tw != null && x.tw <= -4;
+    if (tw != null && tw <= -4) { const e = fut.find(x => !good(x)); dy.win = e ? 'jusqu\'à ' + hh(e.t) : '> 24 h'; }
+    else { const s = fut.findIndex(good); if (s >= 0) { const e = fut.slice(s).find(x => !good(x)); dy.win = e ? hh(fut[s].t) + ' → ' + hh(e.t) : 'dès ' + hh(fut[s].t); } else dy.win = 'aucune 24 h'; }
+    dy.twH = fut;
+  }
+  V.day = dy;
+  /* Site officiel */
+  let site = D.site;
+  if (DEV.unlocked && DEV.sim) site = simSite(V.glide ? V.glide.lv.n.toLowerCase() : 'modérée');
+  V.site = site;
+  if (site && site.d) {
+    const d = site.d, rows = [], vm = {};
+    for (const v of d.vers) for (const x of v.vit) vm[norm(x.lbl)] = {val:x.val, fr:v.fr, vers:v.nom};
+    const fromZ = id => { const z = d.zones[id]; return z ? {val:z.vit, fr:z.fr} : null; };
+    const want = [['Tube', 'tube', ['toboggan','formule 1','avalanche','slalom']], ['Rafting', 'rafting', ['rafting']], ['Tornade', 'tornade', ['tornade']], ['Bobsleigh', 'bobsleigh', ['bobsleigh']], ['Vortex360', 'vortex360', ['vortex360']]];
+    for (const [lbl, key, zs] of want) {
+      let r = vm[key]; if (!r) for (const z of zs) { r = fromZ(z); if (r && r.val) break; }
+      rows.push({lbl, sp:spd(r && r.val), fr:r && r.fr && (key === 'tube' || key === 'rafting' || key === 'bobsleigh') ? r.fr : null});
+    }
+    V.spRows = rows;
+    const st = norm(d.statut);
+    V.siteOpen = (d.pistes && d.pistes.o > 0) ? true : /ferm|closed/.test(st) ? false : /ouvert|open/.test(st) ? true : null;
+    if (V.siteOpen === false && dy.state === 'Ouvert') { dy.state = 'Fermé (site)'; dy.cls = 'bad'; dy.lbl = null; dy.txt = 'Le site officiel indique fermé'; }
+    V.siteStatut = /is closed|are closed/i.test(d.statut) ? 'Les Glissades sont fermées pour le moment.' : /is open|are open/i.test(d.statut) ? 'Les Glissades sont ouvertes.' : d.statut;
+  }
+  /* Zones + mesures du chrono */
+  const log = LS.get('gpdh.log', []);
+  V.zones = ZONES.map(z => {
+    const live = site && site.d && site.d.zones[z.id], sp = live ? spd(live.vit) : {k:'n', n:'—'};
+    const m = log.find(e => e.z === z.id && e.kmh && now - e.t < 3 * HOUR);
+    return Object.assign({}, z, {live, sp, meas:m ? Math.round(m.kmh) : null});
+  });
+  /* Puces d'alerte */
+  const ch = [];
+  const al = D.al && D.al.d ? D.al.d.filter(a => !a.exp || a.exp > now) : [];
+  V.alerts = al;
+  for (const a of al) ch.push({cls:a.col === 'red' ? 'bad' : a.col === 'orange' ? 'warn' : a.col === 'yellow' ? 'yel' : a.type === 'warning' ? 'bad' : a.type === 'watch' ? 'warn' : 'yel', txt:'⚠ ' + a.nom});
+  if (V.cur) {
+    const c = V.cur, sn = V.snow || {};
+    if (sn.frzNow) ch.push({cls:'bad', txt:'🧊 Verglas en cours'});
+    else if (sn.iceNow) ch.push({cls:'warn', txt:'🧊 Surfaces glacées'});
+    if (sn.snowing) ch.push({cls:'info', txt:'❄ Neige en cours' + (c.sn >= 0.1 ? ' ' + cm(c.sn) + '/h' : '')});
+    else if (sn.start && sn.start - now <= 6 * HOUR) ch.push({cls:'info', txt:'❄ Neige dès ' + hh(sn.start)});
+    if (sn.rainNow && !sn.frzNow) ch.push({cls:'info', txt:'🌧 Pluie'});
+    if (sn.refreeze) ch.push({cls:'warn', txt:'🧊 Regel ' + hh(sn.refreeze)});
+    if (sn.poudNow) ch.push({cls:'warn', txt:'💨 Poudrerie'});
+    if ((c.wg || 0) >= 50) ch.push({cls:c.wg >= 70 ? 'bad' : 'warn', txt:'💨 Rafales ' + n0(c.wg)});
+    if (c.vis != null && c.vis < 1000) ch.push({cls:'warn', txt:'🌫 Visibilité ' + visTxt(c.vis)});
+    if (c.feel != null && Math.round(c.feel) <= -28) ch.push({cls:Math.round(c.feel) <= -40 ? 'bad' : 'warn', txt:'🥶 Gelures ' + riskOf(c.feel).frost});
+    if (V.glide && V.glide.ice) ch.push({cls:'warn', txt:'⚡ Glisse glacée'});
+    if ((V.cold && V.cold.uvmax || 0) >= 3) ch.push({cls:'yel', txt:'😎 UV ' + n0(V.cold.uvmax)});
+  }
+  if (!ch.length) ch.push({cls:'ok', txt:V.cur ? '✓ Aucune alerte' : 'Chargement des données…'});
+  V.chips = ch;
+  return V;
+}
+
+/* ===================== Rendu ===================== */
+let VM = null;
+function applyTheme() {
+  let th = SET.theme;
+  if (th === 'auto') {
+    const n = NOW(), r = VM && VM.rise, s = VM && VM.set;
+    th = (r && s) ? ((n < r || n > s) ? 'dark' : 'light') : (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  }
+  document.documentElement.dataset.theme = th;
+  document.documentElement.style.setProperty('--scale', SET.scale);
+  const m = document.querySelector('meta[name=theme-color]'); if (m) m.content = th === 'dark' ? '#050c16' : '#e7edf4';
+}
+function renderHeader() {
+  const V = VM || {}, now = NOW(), p = lp(now);
+  let pill = '…', cls = 'var(--s0)';
+  const dy = V.day || {}, so = V.siteOpen;
+  if (so === true) { pill = 'OUVERT' + (dy.s && dy.s.f ? ' · ferme ' + dy.s.f + ' h' : ''); cls = 'var(--ok)'; }
+  else if (so === false) { pill = 'FERMÉ' + (dy.state === 'Fermé (site)' ? ' (site)' : dy.state === 'Avant ouverture' ? ' · ouvre ' + dy.s.o + ' h' : dy.state === 'Hors saison' ? ' · hors saison' : ''); cls = dy.state === 'Fermé (site)' ? 'var(--bad)' : 'var(--s0)'; }
+  else if (dy.state) { pill = dy.state.toUpperCase() + (dy.state === 'Ouvert' ? ' (horaire)' : ''); cls = dy.state === 'Ouvert' ? 'var(--ok)' : 'var(--s0)'; }
+  $('#hdr').innerHTML =
+    '<div class="brand">Glissades PDH<small>INFO TERRAIN' + (DEV.unlocked && DEV.sim ? ' <span class="simtag">SIM</span>' : '') + '</small></div>' +
+    '<div class="clock">' + p.h + ':' + pad(p.mi) + '</div>' +
+    '<span class="pill" style="background:' + cls + '" data-act="m-day">' + esc(pill) + '</span>' +
+    '<button class="ibtn' + (D.busy ? ' spin' : '') + '" data-act="refresh" aria-label="Actualiser">⟳</button>' +
+    '<button class="ibtn" data-act="settings" aria-label="Réglages">⚙</button>';
+}
+const empty = (t, msg) => '<h3><span>' + t + '</span></h3><div class="tb"><div class="r"><span>' + (msg || 'Données indisponibles') + '</span></div></div>';
+function renderTiles() {
+  const V = VM, c = V.cur;
+  /* Météo */
+  $('#t-wx').innerHTML = !c ? empty('Maintenant', D.busy ? 'Chargement…' : 'Météo indisponible') :
+    '<h3><span>Maintenant · Piedmont</span><span>' + c.emoji + '</span></h3><div class="tb">' +
+    '<div class="wx"><div class="big">' + tf(c.T) + '</div><div class="wx2"><b>' + esc(c.label) + '</b><span>Ressenti <b>' + tf(c.feel) + '</b></span></div></div>' +
+    '<div class="r"><span>Vent</span><b>' + n0(c.ws) + ' km/h ' + dirTxt(c.wd) + '</b></div>' +
+    '<div class="r"><span>Rafales</span><b class="' + ((c.wg || 0) >= 50 ? 'c-bad' : '') + '">' + n0(c.wg) + ' km/h</b></div>' +
+    '<div class="r"><span>Humidité</span><b>' + n0(c.RH) + ' %</b></div>' +
+    '<div class="r"><span>Visibilité</span><b>' + visTxt(c.vis) + '</b></div>' +
+    '<div class="r"><span>Min / max auj.</span><b>' + tf(V.today.Tmin) + ' / ' + tf(V.today.Tmax) + '</b></div></div>';
+  /* Vitesse officielle */
+  const st = V.site;
+  if (!st || !V.spRows) $('#t-sp').innerHTML = empty('Vitesse de glisse', D.busy ? 'Lecture du site…' : 'Site officiel indisponible');
+  else {
+    const old = NOW() - st.t > 30 * 60000, d = st.d;
+    $('#t-sp').innerHTML = '<h3><span>Vitesse de glisse</span><span class="badge ' + (st.sim ? 'info' : old ? 'warn' : 'ok') + '">' + (st.sim ? 'SIM' : 'site ' + hm(st.t)) + '</span></h3><div class="tb">' +
+      V.spRows.map(r => '<div class="r"><span>' + r.lbl + (r.fr ? ' <small>' + r.fr.o + '/' + r.fr.t + '</small>' : '') + '</span><span class="sp k' + r.sp.k + '">' + esc(r.sp.n) + '</span></div>').join('') +
+      '<div class="r"><span>Pistes · remontées</span><b>' + (d.pistes ? d.pistes.o + '/' + d.pistes.t : '—') + ' · ' + (d.rem ? d.rem.o + '/' + d.rem.t : '—') + '</b></div></div>';
+  }
+  /* Glisse estimée */
+  const g = V.glide;
+  if (!g) $('#t-gl').innerHTML = empty('Glisse prévue · météo');
+  else {
+    const top = g.F.slice().sort((a, b) => Math.abs(b.v) - Math.abs(a.v)).slice(0, 2);
+    const mini = (V.glideH || []).slice(1, 9).map(x => '<span class="k' + x.lv.k + '">' + lp(x.t).h + '</span>').join('');
+    $('#t-gl').innerHTML = '<h3><span>Glisse prévue · météo</span><span class="badge k' + (g.ice ? 'ice' : g.lv.k) + '">' + (g.ice ? 'GLACÉE' : 'ESTIMÉ') + '</span></h3><div class="tb">' +
+      '<div class="gl"><span class="lv" style="color:var(--s' + g.lv.k + ')">' + g.lv.n + '</span><b>' + g.s + '</b><span class="mute">' + (V.glTrend ? V.glTrend.a + ' ' + V.glTrend.n : '') + '</span></div>' +
+      '<div class="gauge"><span class="k1" style="width:38%"></span><span class="k2" style="width:18%"></span><span class="k3" style="width:20%"></span><span class="k4" style="width:24%"></span><i style="left:' + g.s + '%"></i></div>' +
+      top.map(f => '<div class="f">' + f.ico + ' ' + esc(f.txt) + '</div>').join('') +
+      (V.glChange ? '<div class="f mute">→ ' + V.glChange.lv.n + ' vers ' + hh(V.glChange.t) + '</div>' : '') +
+      '<div class="mini">' + mini + '</div></div>';
+  }
+  /* Déneigement */
+  const sn = V.snow;
+  if (!sn) $('#t-sn').innerHTML = empty('Déneigement');
+  else {
+    $('#t-sn').innerHTML = '<h3><span>Déneigement</span><span class="badge ' + sn.lv + '">' + sn.lvTxt + '</span></h3><div class="tb">' +
+      (sn.snowing ? '<div class="r"><span>Neige en cours</span><b class="c-info">' + (sn.rate != null ? cm(sn.rate) + '/h' : 'oui') + '</b></div>' : '') +
+      '<div class="r"><span>Tombé 6 h · 24 h</span><b>' + cm(sn.p6) + ' · ' + cm(sn.p24) + '</b></div>' +
+      '<div class="r"><span>Prévu 12 h</span><b>' + cm(sn.n12) + (sn.start ? ' · dès ' + hh(sn.start) : '') + '</b></div>' +
+      '<div class="r"><span>Verglas</span><b class="' + (sn.frzNow || sn.frzPast || sn.iceNow ? 'c-bad' : sn.frzNext || sn.refreeze ? 'c-warn' : '') + '">' +
+        (sn.frzNow ? 'EN COURS' : sn.frzPast ? 'récent' : sn.iceNow ? 'regel (glace)' : sn.frzNext ? 'prévu' : sn.refreeze ? 'regel ' + hh(sn.refreeze) : 'non') + '</b></div>' +
+      (sn.snowing ? '' : '<div class="r"><span>Poudrerie</span><b class="' + (sn.poudNow ? 'c-warn' : '') + '">' + (sn.poudNow ? 'oui' : sn.poudNext ? 'vers ' + hh(sn.poudNext) : 'non') + '</b></div>') +
+      '<div class="act">→ ' + esc(sn.A[0]) + '</div></div>';
+  }
+  /* Froid */
+  const co = V.cold;
+  if (!co || !co.risk) $('#t-co').innerHTML = empty('Froid · sécurité');
+  else {
+    $('#t-co').innerHTML = '<h3><span>Froid · sécurité</span><span class="badge ' + co.risk.cls + '">' + co.risk.n + '</span></h3><div class="tb">' +
+      '<div class="r"><span>Refroid. éolien</span><b style="font-size:1.05rem">' + tf(co.wc) + '</b></div>' +
+      '<div class="r"><span>Gelures (peau)</span><b>' + co.risk.frost + '</b></div>' +
+      '<div class="r"><span>Pauses</span><b class="' + (co.work.r >= 0 && co.work.short !== 'Normales' ? 'c-warn' : '') + '">' + co.work.short + '</b></div>' +
+      '<div class="r"><span>Pire 12 h</span><b>' + (co.worst ? tf(co.worst.v) + ' à ' + hh(co.worst.t) : '—') + '</b></div>' +
+      '<div class="r"><span>UV max</span><b>' + (co.uvmax != null ? n0(co.uvmax) + ' ' + uvTxt(co.uvmax) : '—') + '</b></div></div>';
+  }
+  /* Journée */
+  const dy = V.day;
+  $('#t-dy').innerHTML = '<h3><span>Horaire · soleil</span><span class="badge ' + dy.cls + '">' + dy.state + '</span></h3><div class="tb">' +
+    '<div class="r"><span>Aujourd\'hui' + (dy.s && dy.s.tbc ? ' (si ouvert)' : '') + '</span><b>' + (dy.s ? (dy.s.o != null ? hrsTxt(dy.s) : 'Fermé') : 'Hors saison') + '</b></div>' +
+    (dy.lbl ? '<div class="r"><span>' + dy.lbl + '</span><b>' + dy.cd + '</b></div>' : '<div class="r"><span>' + esc(dy.txt || '') + '</span></div>') +
+    '<div class="r"><span>Lever · coucher</span><b>' + hm(V.rise) + ' · ' + hm(V.set) + '</b></div>' +
+    (dy.light ? '<div class="r"><span>' + dy.light.lbl + '</span><b>' + dy.light.v + '</b></div>' : '') +
+    '<div class="r"><span>Neige artificielle</span><b class="' + (dy.snm ? dy.snm.cls : '') + '">' + (dy.snm ? dy.snm.n + ' ' + tf(dy.tw) : '—') + '</b></div>' +
+    '<div class="r"><span>Fenêtre fabrication</span><b>' + (dy.win || '—') + '</b></div></div>';
+}
+function hourN() {
+  const el = $('#hours'), fs = parseFloat(getComputedStyle(document.documentElement).fontSize) || 12;
+  return clamp(Math.floor(el.clientWidth / (fs * 3.15)), 6, 16);
+}
+function renderHours() {
+  const V = VM, el = $('#hours');
+  if (!V.S || V.i0 < 0) { el.innerHTML = '<div class="hc" style="grid-column:1/-1">Prévisions horaires indisponibles</div>'; return; }
+  const n = hourN(); el.style.setProperty('--n', n);
+  let h = '';
+  for (let k = 0; k < n; k++) {
+    const x = V.S.H[V.i0 + k]; if (!x) break;
+    const g = V.glideH && V.glideH[k], cur = k === 0 && V.cur;
+    const T = cur ? V.cur.T : x.T, ws = cur ? V.cur.ws : x.ws, wg = cur ? V.cur.wg : x.wg, w = wmo(cur ? V.cur.code : x.wc, x.day);
+    const p = (x.sn || 0) >= 0.1 ? cm(x.sn).replace(' cm', '') + 'cm' : (x.rain || 0) >= 0.1 ? mm(x.rain).replace(' mm', '') + 'mm' : (x.pp || 0) >= 30 ? x.pp + '%' : '·';
+    h += '<div class="hc' + (g ? ' b' + g.lv.k : '') + '"><span class="t">' + (k === 0 ? 'Mtn' : lp(x.t).h + 'h') + '</span><span class="e">' + w.emoji + '</span><span class="T">' + tf(T) +
+      '</span><span class="p">' + p + '</span><span class="w">' + n0(ws) + ((wg || 0) >= 40 ? '<small class="' + (wg >= 60 ? 'c-bad' : 'c-warn') + '">/' + n0(wg) + '</small>' : '') + '</span></div>';
+  }
+  el.innerHTML = h;
+}
+function renderZones() {
+  const V = VM;
+  $('#zones').innerHTML = V.zones.map(z => {
+    const fr = z.live && z.live.fr, off = !z.live || !fr || fr.o === 0;
+    const k = off ? 0 : z.sp.k;
+    return '<div class="z k' + k + (off ? ' off' : '') + '" data-act="zone" data-id="' + z.id + '"><b>' + z.c + '</b><span>' + (fr ? fr.o + '/' + fr.t : '—/' + z.p) + '</span>' + (z.meas ? '<em>' + z.meas + '</em>' : '') + '</div>';
+  }).join('') + '<div class="z leg" data-act="m-glide"><b>ⓘ</b><span>Zones</span></div>';
+}
+function renderChips() { $('#chips').innerHTML = VM.chips.map(c => '<span class="chip ' + c.cls + '">' + esc(c.txt) + '</span>').join(''); }
+function renderFooter() {
+  const ts = [D.om && D.om.t, D.site && D.site.t].filter(Boolean), last = ts.length ? Math.max(...ts) : null;
+  const stale = !last || Date.now() - last > 45 * 60000, nal = VM.alerts ? VM.alerts.length : 0;
+  $('#ftr').innerHTML = '<button class="fb" data-act="radar">📡 Radar</button><button class="fb" data-act="chrono">⏱ Chrono</button>' +
+    '<button class="fb" data-act="m-fc">📋 Prévisions</button><button class="fb" data-act="alerts">⚠ Alertes' + (nal ? '<span class="n">' + nal + '</span>' : '') + '</button>' +
+    '<div class="upd' + (stale ? ' stale' : '') + '">' + (last ? 'MAJ ' + hm(last) : 'Hors ligne') + '<br>' + (VM.src ? esc(VM.src.length > 14 ? VM.src.slice(0, 14) + '…' : VM.src) : '—') + '</div>';
+}
+function render() {
+  try { VM = build(); } catch (e) { console.error(e); VM = VM || {chips:[{cls:'bad', txt:'Erreur : ' + e.message}], zones:[], day:{}, today:{}}; }
+  applyTheme(); renderHeader(); renderChips();
+  try { renderTiles(); renderHours(); renderZones(); renderFooter(); } catch (e) { console.error(e); }
+}
+
+/* ===================== Fenêtres de détail ===================== */
+function openModal(title, html) { $('#mt').textContent = title; $('#mb').innerHTML = html; $('#ov').classList.add('on'); }
+function closeModal() { $('#ov').classList.remove('on'); stopRadar(); }
+const R = (a, b, cls) => '<div class="r"><span>' + a + '</span><b class="' + (cls || '') + '">' + b + '</b></div>';
+
+function mWx() {
+  const V = VM, c = V.cur, e = D.ec && D.ec.d;
+  if (!c) return openModal('Météo', '<p>Données indisponibles.</p>');
+  const H = V.S.H, f6 = H.slice(V.i0 + 1, V.i0 + 7);
+  let h = '<div class="wx"><div class="big">' + tf(c.T) + '</div><div class="wx2"><b>' + c.emoji + ' ' + esc(c.label) + '</b><span>Refroidissement éolien <b>' + tf(c.feel) + '</b></span></div></div><div class="g2">' +
+    R('Vent', n0(c.ws) + ' km/h ' + dirTxt(c.wd)) + R('Rafales', n0(c.wg) + ' km/h') + R('Humidité', n0(c.RH) + ' %') + R('Point de rosée', tf(c.Td)) +
+    R('Nuages', n0(c.cc) + ' %') + R('Visibilité', visTxt(c.vis)) + R('Pression', c.p != null ? n0(c.p) + ' hPa' : '—') + R('Neige au sol*', c.sd != null ? cm(c.sd * 100) : '—') +
+    R('Min / max', tf(V.today.Tmin) + ' / ' + tf(V.today.Tmax)) + R('Précip. 6 h', mm(sumK(f6, 'pr'))) + R('Neige 6 h', cm(sumK(f6, 'sn'))) + R('Prob. max 6 h', f6.length && maxK(f6, 'pp') != null ? maxK(f6, 'pp') + ' %' : '—') + '</div>';
+  if (e && e.cur && e.cur.T != null) h += '<h4>Observé · ' + esc(e.cur.station || 'ECCC') + '</h4><div class="g2">' + R('Température', tf1(e.cur.T)) + R('Condition', esc(e.cur.cond || '—')) +
+    R('Vent', n0(e.cur.ws) + ' km/h ' + esc(e.cur.dirTxt || '')) + R('Heure', hm(e.cur.t)) + '</div>';
+  if (e && e.fc && e.fc.length) h += '<h4>Prévision Environnement Canada · ' + esc(e.nom) + '</h4>' + e.fc.slice(0, 2).map(f => '<p><b>' + esc(cap(f.n)) + ' :</b> ' + esc(f.txt) + '</p>').join('');
+  h += '<p class="mute" style="font-size:.7rem">Source : ' + esc(V.src) + ' (modèle au point exact du Domaine). *Neige au sol = estimation du modèle, pas la base des pistes.</p>';
+  openModal('Météo · Piedmont', h);
+}
+function mGlide() {
+  const V = VM, g = V.glide, st = V.site;
+  let h = '<h4>Officiel · site du Domaine ' + (st ? '(' + (st.sim ? 'simulé' : 'lu ' + hm(st.t)) + ')' : '') + '</h4>';
+  if (st && st.d) {
+    h += '<p style="font-size:.78rem">' + esc(V.siteStatut || '') + (st.mod ? ' <span class="mute">· page modifiée ' + dateTxt(st.mod) + ' ' + hm(st.mod) + '</span>' : '') + '</p>';
+    h += '<table class="tbl"><tr><th>Zone</th><th>Pistes</th><th>Vitesse</th><th>Zone</th><th>Pistes</th><th>Vitesse</th></tr>';
+    for (let i = 0; i < V.zones.length; i += 2) {
+      h += '<tr>' + [V.zones[i], V.zones[i + 1]].map(z => z ? '<td data-act="zone" data-id="' + z.id + '"><b>' + esc(z.nom.replace('Parc du ', '')) + '</b></td><td>' + (z.live && z.live.fr ? z.live.fr.o + '/' + z.live.fr.t : '—') +
+        '</td><td><span class="sp k' + z.sp.k + '" style="font-size:.66rem">' + esc(z.sp.n) + '</span></td>' : '<td></td><td></td><td></td>').join('') + '</tr>';
+    }
+    h += '</table>';
+  } else h += '<p>Site officiel indisponible' + (D.err.site ? ' (' + esc(D.err.site) + ')' : '') + '.</p>';
+  if (g) {
+    h += '<h4>Estimation selon la météo (indice 0-100)</h4><div class="gl"><span class="lv" style="color:var(--s' + g.lv.k + ')">' + g.lv.n + '</span><b>' + g.s + '/100</b>' +
+      (g.ice ? '<span class="badge kice">GLACÉE</span>' : '') + '<span class="mute">' + (V.glTrend ? V.glTrend.a + ' ' + V.glTrend.n + ' (3 h)' : '') + '</span></div>' +
+      g.F.map(f => '<div class="r"><span>' + f.ico + ' ' + esc(f.txt) + '</span><b class="' + (f.v > 0 ? 'c-bad' : f.v < 0 ? 'c-info' : '') + '">' + (f.v > 0 ? '+' : '') + f.v + '</b></div>').join('') +
+      '<div class="mini" style="margin-top:.2rem">' + (V.glideH || []).slice(0, 13).map(x => '<span class="k' + (x.ice ? 'ice' : x.lv.k) + '" style="font-size:.6rem">' + lp(x.t).h + 'h<br>' + x.s + '</span>').join('') + '</div>';
+  }
+  h += '<h4>Repères</h4><p style="font-size:.76rem"><span class="sp k1">Lente</span> <span class="sp k2">Modérée</span> <span class="sp k3">Rapide</span> <span class="sp k4">Très rapide</span> <span class="sp kice">Glacée</span><br>' +
+    '+ = accélère la glisse, − = ralentit. Glisse rapide → viser le bas de la plage de glisseurs par embarcation; glisse lente → le haut. ' +
+    'L\'estimation est automatique (température, neige fraîche, regel, soleil) : la vitesse officielle et les consignes du superviseur ont toujours priorité.</p>';
+  openModal('Vitesse de glisse', h);
+}
+function bars(H, i0, back, fwd) {
+  const arr = []; for (let i = i0 - back + 1; i <= i0 + fwd; i++) arr.push(H[i] || null);
+  const mx = Math.max(1, ...arr.map(x => x ? Math.max(x.sn || 0, (x.rain || 0) / 2) : 0));
+  return '<div class="bars">' + arr.map(x => {
+    if (!x) return '<span class="z0"></span>';
+    const sn = x.sn || 0, rn = (x.rain || 0) / 2, v = Math.max(sn, rn), fz = FRZ.includes(x.wc);
+    return '<span class="' + (fz ? 'fz' : rn > sn ? 'rn' : '') + (v <= 0 ? ' z0' : '') + '" style="height:' + Math.round(v / mx * 100) + '%" title="' + hh(x.t) + '"></span>';
+  }).join('') + '<i class="now" style="left:' + (back / (back + fwd) * 100) + '%"></i></div>';
+}
+function mSnow() {
+  const V = VM, sn = V.snow; if (!sn) return openModal('Déneigement', '<p>Données indisponibles.</p>');
+  const H = V.S.H;
+  let h = '<div class="g2">' + R('Tombé 6 h', cm(sn.p6)) + R('Tombé 24 h', cm(sn.p24)) + R('Prévu 6 h', cm(sn.n6)) + R('Prévu 12 h', cm(sn.n12)) + R('Prévu 24 h', cm(sn.n24)) +
+    R('Début neige', sn.snowing ? 'en cours' : sn.start ? hh(sn.start) : '—') + R('Fin neige', sn.end ? hh(sn.end) : '—') + R('Pluie 12 h', mm(sn.rainN12)) +
+    R('Verglas', sn.frzNow ? 'en cours' : sn.frzPast ? 'récent' : sn.frzNext ? 'prévu' : 'non', sn.frzNow || sn.frzPast ? 'c-bad' : '') +
+    R('Regel', sn.iceNow ? 'surfaces glacées' : sn.refreeze ? hh(sn.refreeze) : 'non') + R('Poudrerie', sn.poudNow ? 'oui' : sn.poudNext ? hh(sn.poudNext) : 'non') +
+    R('Neige au sol*', sn.depth != null ? cm(sn.depth) : '—') + '</div>';
+  h += '<h4>Précipitations heure par heure (24 h passées | 24 h à venir)</h4>' + bars(H, V.i0, 24, 24) +
+    '<div class="bx"><span>−24 h</span><span>−12 h</span><span style="color:var(--bad)">maintenant</span><span>+12 h</span><span>+24 h</span></div>' +
+    '<p class="mute" style="font-size:.66rem">Bleu = neige (cm) · vert = pluie · violet = verglas</p>';
+  h += '<h4>Actions suggérées</h4>' + sn.A.map(a => '<div class="r"><span style="color:var(--ink);white-space:normal">→ ' + esc(a) + '</span></div>').join('');
+  h += '<p class="mute" style="font-size:.66rem">*Estimation du modèle. Seuils : REQUIS si ≥ 2 cm en 6 h, neige ≥ 0,5 cm/h, verglas, regel ou poudrerie; À PRÉVOIR si neige ou verglas prévus dans les 12 h.</p>';
+  openModal('Déneigement', h);
+}
+function mCold() {
+  const V = VM, co = V.cold; if (!co || !co.risk) return openModal('Froid', '<p>Données indisponibles.</p>');
+  const c = V.cur;
+  let h = '<div class="g2">' + R('Température', tf(c.T)) + R('Vent', n0(c.ws) + ' km/h') + R('Refroid. éolien', tf(co.wc)) + R('Risque', co.risk.n, 'c-' + (co.risk.cls === 'ok' ? 'ok' : co.risk.cls)) + '</div>' +
+    '<p><b>' + esc(co.risk.txt) + '</b></p>';
+  h += '<h4>Refroidissement éolien (Environnement Canada)</h4><table class="tbl"><tr><th>Indice</th><th>Risque</th><th>Gelure peau exposée</th></tr>' +
+    [['0 à −9', 0], ['−10 à −27', 1], ['−28 à −39', 2], ['−40 à −47', 3], ['−48 à −54', 4], ['−55 et moins', 5]].map(([l, i]) => '<tr class="' + (RISK[i] === co.risk ? 'hl' : '') + '"><td>' + l + '</td><td>' + RISK[i].n + '</td><td>' + RISK[i].frost + '</td></tr>').join('') + '</table>';
+  h += '<h4>Pauses de réchauffement (ACGIH, quart de 4 h)</h4><p>' + esc(co.work.long) + '</p>';
+  if (co.work.r >= 0) h += '<table class="tbl"><tr><th>Temp.</th>' + ACG_W.map(w => '<th>' + w + '</th>').join('') + '</tr>' +
+    ACG.map((row, i) => '<tr class="' + (i === co.work.r ? 'hl' : '') + '"><td>' + ACG_T[i] + '</td>' + row.map((v, j) => '<td style="' + (i === co.work.r && j === co.work.c ? 'color:var(--bad)' : '') + '">' + (v === 'N' ? 'norm.' : v === 'X' ? 'arrêt' : v.replace('/', ' min/')) + '</td>').join('') + '</tr>').join('') + '</table>';
+  h += '<h4>Rappels</h4><p style="font-size:.76rem">Couvrir nez, joues, oreilles et doigts · couches sèches, changer les gants mouillés · système de jumelage : vérifier les taches blanches/grises sur le visage du collègue · boire chaud, éviter caféine et alcool · frissons intenses, confusion ou somnolence = se mettre à l\'abri et aviser le superviseur.</p>' +
+    '<p class="mute" style="font-size:.66rem">UV max aujourd\'hui : ' + (co.uvmax != null ? n0(co.uvmax) + ' (' + uvTxt(co.uvmax) + ')' : '—') + ' — la neige réfléchit jusqu\'à 80 % des UV : lunettes de soleil et écran solaire.</p>';
+  openModal('Froid · sécurité', h);
+}
+function mDay() {
+  const V = VM, dy = V.day, now = NOW();
+  let h = '<div class="g2">' + R('Aujourd\'hui', dy.s ? (dy.s.o != null ? hrsTxt(dy.s) : 'Fermé') : 'Hors saison') + R('État', dy.state + (dy.cd ? ' · ' + dy.cd : '')) +
+    R('Lever du soleil', hm(V.rise)) + R('Coucher du soleil', hm(V.set)) + (dy.light ? R(dy.light.lbl, dy.light.v) : '') + R('Site officiel', V.siteOpen === true ? 'ouvert' : V.siteOpen === false ? 'fermé' : '—') + '</div>';
+  h += '<h4>7 prochains jours (horaire prévu 2026-2027)</h4><table class="tbl"><tr><th>Jour</th><th>Heures</th><th>Note</th></tr>';
+  for (let d = 0; d < 7; d++) { const p = lp(now + d * 24 * HOUR), t = localMs(p.y, p.mo, p.d, 12, 0), s = schedFor(t); h += '<tr class="' + (d === 0 ? 'hl' : '') + '"><td>' + dateTxt(t) + '</td><td>' + (s ? (s.o != null ? hrsTxt(s) : 'Fermé') : 'Hors saison') + '</td><td class="mute">' + esc(s ? s.note : '') + '</td></tr>'; }
+  h += '</table>';
+  if (dy.twH) {
+    h += '<h4>Fabrication de neige · bulbe humide (24 h)</h4><div class="mini">' + dy.twH.filter((x, i) => i % 2 === 0).map(x => {
+      const k = x.tw == null ? 0 : x.tw <= -7 ? 2 : x.tw <= -4 ? 2 : x.tw <= -2 ? 3 : 0;
+      return '<span class="k' + k + '" style="font-size:.56rem">' + lp(x.t).h + 'h<br>' + (x.tw != null ? Math.round(x.tw) : '—') + '</span>';
+    }).join('') + '</div><p class="mute" style="font-size:.66rem">Bulbe humide ≤ −7 ° excellente · ≤ −4 ° bonne · ≤ −2 ° marginale · au-dessus : impossible. Maintenant : ' + tf1(dy.tw) + ' (' + (dy.snm ? dy.snm.n : '—') + ').</p>';
+  }
+  h += '<p style="font-size:.72rem"><a class="lnk" href="' + CFG.horaireWeb + '" target="_blank" rel="noopener">Horaire officiel ↗</a> — les heures peuvent varier selon la météo.</p>';
+  openModal('Horaire · soleil', h);
+}
+function mHours() {
+  const V = VM; if (!V.S || V.i0 < 0) return openModal('Heure par heure', '<p>Indisponible.</p>');
+  let h = '<table class="tbl"><tr><th>Heure</th><th></th><th>Temp.</th><th>Ress.</th><th>Précip.</th><th>Vent/raf.</th><th>Glisse</th></tr>';
+  for (let k = 0; k < 24; k++) {
+    const x = V.S.H[V.i0 + k]; if (!x) break; const g = V.glideH && V.glideH[k], w = wmo(x.wc, x.day);
+    const p = (x.sn || 0) >= 0.1 ? cm(x.sn) : (x.rain || 0) >= 0.1 ? mm(x.rain) : x.pp != null ? x.pp + ' %' : '—';
+    h += '<tr class="' + (k === 0 ? 'hl' : '') + '"><td>' + (k === 0 ? 'Mtn' : hh(x.t)) + '</td><td>' + w.emoji + '</td><td><b>' + tf(x.T) + '</b></td><td>' + tf(windChill(x.T, x.ws)) + '</td><td>' + p + '</td><td>' + n0(x.ws) + '/' + n0(x.wg) + '</td><td>' + (g ? '<span class="sp k' + (g.ice ? 'ice' : g.lv.k) + '" style="font-size:.6rem">' + g.lv.n + '</span>' : '') + '</td></tr>';
+  }
+  openModal('Prochaines 24 heures', h + '</table>');
+}
+function mFc() {
+  const e = D.ec && D.ec.d;
+  let h = '';
+  if (e && e.fc && e.fc.length) h += '<h4>Environnement Canada · ' + esc(e.nom) + ' · ' + (e.upd ? hm(e.upd) : '') + '</h4>' + e.fc.slice(0, 6).map(f => '<p><b>' + esc(cap(f.n)) + ' :</b> ' + esc(f.txt) + '</p>').join('');
+  else h += '<p>Prévisions texte indisponibles' + (D.err.ec ? ' (' + esc(D.err.ec) + ')' : '') + '.</p>';
+  const S = VM.S;
+  if (S && S.DY) h += '<h4>Résumé des jours</h4><table class="tbl"><tr><th>Jour</th><th>Min/max</th><th>Neige</th><th>Précip.</th><th>Rafales</th></tr>' +
+    S.DY.filter(d => ymd(d.t + 12 * HOUR) >= ymd(NOW())).slice(0, 3).map(d => '<tr><td>' + dateTxt(d.t + 12 * HOUR) + '</td><td>' + tf(d.Tmin) + ' / ' + tf(d.Tmax) + '</td><td>' + cm(d.sn) + '</td><td>' + mm(d.pr) + '</td><td>' + n0(d.wg) + '</td></tr>').join('') + '</table>';
+  h += '<p style="font-size:.72rem"><a class="lnk" href="https://meteo.gc.ca/fr/location/index.html?coords=45.885,-74.123" target="_blank" rel="noopener">Météo Canada ↗</a> · <a class="lnk" href="https://www.quebec511.info/" target="_blank" rel="noopener">Québec 511 ↗</a></p>';
+  openModal('Prévisions', h);
+}
+function mAlerts() {
+  const V = VM; let h = '';
+  if (V.alerts && V.alerts.length) h += V.alerts.map(a => '<div class="alrt ' + (a.col === 'yellow' || a.type === 'statement' || a.type === 'advisory' ? 'yel' : a.col === 'orange' || a.type === 'watch' ? 'warn' : '') + '"><b>' + esc(a.nom) + '</b> <span class="mute">' + esc(a.zone || '') +
+    (a.exp ? ' · expire ' + hm(a.exp) : '') + '</span>\n' + esc(a.txt.slice(0, 900)) + '</div>').join('');
+  else h += '<p>' + (D.al ? '✓ Aucune alerte d\'Environnement Canada pour le secteur.' : 'Alertes indisponibles' + (D.err.al ? ' (' + esc(D.err.al) + ')' : '') + '.') + '</p>';
+  h += '<h4>Signaux terrain (calculés)</h4>' + V.chips.filter(c => !/^⚠/.test(c.txt)).map(c => '<span class="chip ' + c.cls + '" style="display:inline-block;margin:0 .2rem .2rem 0">' + esc(c.txt) + '</span>').join('');
+  openModal('Alertes', h);
+}
+function mZone(id) {
+  const z = VM.zones.find(x => x.id === id); if (!z) return;
+  const l = z.live || {}, m = (z.gl || '').match(/(\d+)\D+(\d+)/), lv = z.sp.k;
+  let rep = '';
+  if (m && typeof lv === 'number' && lv > 0) { const a = +m[1], b = +m[2], mid = Math.round((a + b) / 2); rep = lv >= 4 ? a + ' à ' + Math.min(b, a + 1) : lv === 3 ? a + ' à ' + mid : lv === 2 ? mid + ' à ' + b : b + ' (max)'; }
+  const log = LS.get('gpdh.log', []).filter(e => e.z === id).slice(0, 4);
+  let h = '<div class="g2">' + R('État', esc(l.etat ? cap(l.etat) : '—')) + R('Pistes ouvertes', l.fr ? l.fr.o + '/' + l.fr.t : '—/' + z.p) +
+    R('Vitesse (officiel)', '<span class="sp k' + z.sp.k + '">' + esc(z.sp.n) + '</span>') + R('Soirée', esc(l.soir ? cap(l.soir) : z.soir ? 'Disponible' : 'Non disponible')) +
+    R('Niveau', esc(l.niv || z.niv)) + R('Versant', esc(z.v)) + R('Remontée', esc(l.rem || z.rem)) + R('Glisseurs', esc(l.gl || z.gl)) +
+    R('Grandeur min.', esc(l.taille || z.taille || 'aucune')) + R('Casque', esc(l.casque || z.casque || 'Fortement recommandé')) + '</div>';
+  if (z.note) h += '<p class="mute">' + esc(z.note) + '</p>';
+  if (rep) h += '<p><b>Repère :</b> glisse ' + esc(z.sp.n.toLowerCase()) + ' → environ ' + rep + ' glisseurs par embarcation (plage officielle ' + esc(z.gl) + '). Suivre les consignes du superviseur.</p>';
+  if (log.length) h += '<h4>Mesures chrono récentes</h4>' + log.map(e => R(hm(e.t), (e.kmh ? n0(e.kmh) + ' km/h' : '') + (e.s ? ' · ' + e.s.toFixed(1).replace('.', ',') + ' s' : ''))).join('');
+  h += '<button class="btn pri" data-act="chrono" data-id="' + z.id + '">⏱ Chronométrer cette zone</button>';
+  openModal('Zone ' + z.nom.replace('Parc du ', ''), h);
+}
+
+/* ===================== Chrono / mesure de vitesse ===================== */
+const CH = {run:false, t0:0, el:0, raf:0, zone:null};
+function chronoView() {
+  const log = LS.get('gpdh.log', []), dist = LS.get('gpdh.dist', {}), z = CH.zone || 'toboggan', d = dist[z] || '';
+  const s = CH.el / 1000, k0 = d && s > 0 ? (d / s) * 3.6 : null, kmh = k0 && k0 <= 150 ? k0 : null;
+  return '<div class="sl" style="grid-template-columns:5rem 1fr"><span>Zone</span><select id="chZ" class="inp">' + ZONES.map(x => '<option value="' + x.id + '"' + (x.id === z ? ' selected' : '') + '>' + esc(x.nom) + '</option>').join('') + '</select></div>' +
+    '<div class="sl" style="grid-template-columns:5rem 1fr"><span>Distance (m)</span><input id="chD" class="inp" type="number" inputmode="decimal" placeholder="longueur mesurée" value="' + esc(d) + '"></div>' +
+    '<div class="chrono" id="chT">' + s.toFixed(2).replace('.', ',') + ' s</div><div style="text-align:center;font-weight:850;font-size:1.2rem" id="chK">' + (kmh ? n0(kmh) + ' km/h' : k0 ? '<span class="c-bad">Vérifier distance / temps</span>' : '— km/h') + '</div>' +
+    '<button class="bigbtn' + (CH.run ? ' stop' : '') + '" data-act="chGo">' + (CH.run ? 'ARRIVÉE ■' : 'DÉPART ▶') + '</button>' +
+    '<div class="bg"><button class="btn" data-act="chReset">Réinitialiser</button><button class="btn pri" data-act="chSave">Enregistrer</button>' +
+    '<input id="chR" class="inp" style="flex:1;width:auto" type="number" inputmode="decimal" placeholder="ou vitesse radar km/h"></div>' +
+    '<h4>Journal (appareil)</h4>' + (log.length ? log.slice(0, 6).map(e => R(hm(e.t) + ' · ' + esc((ZONES.find(x => x.id === e.z) || {}).nom || e.z), (e.kmh ? n0(e.kmh) + ' km/h' : '—') + (e.s ? ' · ' + e.s.toFixed(1).replace('.', ',') + ' s' : ''))).join('') +
+      '<button class="btn" data-act="chClear">Effacer le journal</button>' : '<p class="mute">Aucune mesure. Entrez la longueur de la piste une fois : elle est mémorisée par zone.</p>');
+}
+function openChrono(zone) { if (zone) CH.zone = zone; openModal('Chrono de descente', chronoView()); }
+function chTick() {
+  CH.el = performance.now() - CH.t0; const el = $('#chT'); if (el) el.textContent = (CH.el / 1000).toFixed(2).replace('.', ',') + ' s';
+  if (CH.run) CH.raf = requestAnimationFrame(chTick);
+}
+function chSyncInputs() {
+  const zs = $('#chZ'), ds = $('#chD'); if (zs) CH.zone = zs.value;
+  if (ds) { const dist = LS.get('gpdh.dist', {}); const v = num(ds.value); if (v) dist[CH.zone] = v; else delete dist[CH.zone]; LS.set('gpdh.dist', dist); }
+}
+
+/* ===================== Radar ===================== */
+const RD = {z:8, layer:null, frames:[], i:0, timer:0, imgs:[]};
+function stopRadar() { clearInterval(RD.timer); RD.timer = 0; }
+function mercPx(lat, lon, z) { const s = 256 * Math.pow(2, z), r = lat * Math.PI / 180; return [(lon + 180) / 360 * s, (1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * s]; }
+function openRadar() {
+  if (!RD.layer) RD.layer = (VM.cur && VM.cur.T != null && VM.cur.T > 1) ? 'RADAR_1KM_RRAI' : 'RADAR_1KM_RSNO';
+  openModal('Radar · précipitations', '<div class="rad" id="rad"></div><div class="radbar"><button class="btn" data-act="rz" data-v="-1">−</button><button class="btn" data-act="rplay" id="rplay">❚❚</button>' +
+    '<input type="range" id="rT" min="0" max="0" value="0"><span id="rL" style="font-weight:850;min-width:3.2rem;text-align:right">—</span><button class="btn" data-act="rz" data-v="1">+</button></div>' +
+    '<div class="bg"><button class="btn' + (RD.layer === 'RADAR_1KM_RSNO' ? ' on' : '') + '" data-act="rlayer" data-v="RADAR_1KM_RSNO">❄ Neige</button><button class="btn' + (RD.layer === 'RADAR_1KM_RRAI' ? ' on' : '') + '" data-act="rlayer" data-v="RADAR_1KM_RRAI">🌧 Pluie</button></div>' +
+    '<p class="mute" style="font-size:.64rem">Cercles : 25 et 50 km autour du Domaine (📍). Dernière heure, images aux 6 min. Radar © ECCC GeoMet · fond de carte © Esri, © OpenStreetMap.</p>');
+  drawRadar();
+}
+async function drawRadar() {
+  stopRadar();
+  const box = $('#rad'); if (!box) return;
+  const W = box.clientWidth, Hh = Math.round(Math.min(W, innerHeight * 0.56)); box.style.height = Hh + 'px';
+  const z = RD.z, [px, py] = mercPx(CFG.lat, CFG.lon, z), x0 = px - W / 2, y0 = py - Hh / 2, n = Math.pow(2, z);
+  let h = '';
+  for (let tx = Math.floor(x0 / 256); tx <= Math.floor((x0 + W) / 256); tx++) for (let ty = Math.floor(y0 / 256); ty <= Math.floor((y0 + Hh) / 256); ty++) {
+    if (ty < 0 || ty >= n) continue; const sx = ((tx % n) + n) % n;
+    h += '<img alt="" src="https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/' + z + '/' + ty + '/' + sx + '" ' +
+      'onerror="this.onerror=null;this.src=\'https://tile.openstreetmap.org/' + z + '/' + sx + '/' + ty + '.png\'" style="left:' + Math.round(tx * 256 - x0) + 'px;top:' + Math.round(ty * 256 - y0) + 'px;width:256px;height:256px">';
+  }
+  const R0 = 6378137, S = 2 * Math.PI * R0, m = v => v / (256 * n) * S;
+  const bb = [m(x0) - S / 2, S / 2 - m(y0 + Hh), m(x0 + W) - S / 2, S / 2 - m(y0)].map(v => v.toFixed(0)).join(',');
+  const res = S * Math.cos(CFG.lat * Math.PI / 180) / (256 * n), r25 = 25000 / res, r50 = 50000 / res;
+  h += '<div id="radL" class="ov"></div><svg class="ov" width="' + W + '" height="' + Hh + '"><g fill="none" stroke="#d02c24" stroke-width="1.5" stroke-dasharray="4 4" opacity=".75"><circle cx="' + W / 2 + '" cy="' + Hh / 2 + '" r="' + r25 + '"/><circle cx="' + W / 2 + '" cy="' + Hh / 2 + '" r="' + r50 + '"/></g>' +
+    '<text x="' + (W / 2 + 4) + '" y="' + (Hh / 2 - r25 + 12) + '" font-size="10" fill="#d02c24">25 km</text><text x="' + (W / 2 + 4) + '" y="' + (Hh / 2 - r50 + 12) + '" font-size="10" fill="#d02c24">50 km</text></svg>' +
+    '<div class="ov" style="display:grid;place-items:center;font-size:1.3rem;margin-top:-1.2rem">📍</div>';
+  box.innerHTML = h;
+  let frames = [];
+  try {
+    const xml = await fetch('https://geo.weather.gc.ca/geomet?service=WMS&version=1.3.0&request=GetCapabilities&layer=' + RD.layer, {cache:'no-store'}).then(r => r.text());
+    const dm = /<Dimension[^>]*name="time"[^>]*>([^<]+)<\/Dimension>/i.exec(xml);
+    if (dm) { const [a, b] = dm[1].trim().split('/'), end = Date.parse(b), st = Date.parse(a); for (let k = 9; k >= 0; k--) { const t = end - k * 6 * 60000; if (t >= st) frames.push(t); } }
+  } catch (e) {}
+  if (!$('#rad')) return;
+  const dpr = Math.min(2, window.devicePixelRatio || 1), base = 'https://geo.weather.gc.ca/geomet?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&FORMAT=image/png&TRANSPARENT=TRUE&STYLES=&CRS=EPSG:3857&LAYERS=' + RD.layer +
+    '&WIDTH=' + Math.round(W * dpr) + '&HEIGHT=' + Math.round(Hh * dpr) + '&BBOX=' + bb;
+  if (!frames.length) frames = [null];
+  RD.frames = frames; RD.i = frames.length - 1;
+  const L = $('#radL');
+  L.innerHTML = frames.map((t, i) => '<img alt="" src="' + base + (t ? '&TIME=' + new Date(t).toISOString().replace('.000', '') : '') + '" style="left:0;top:0;width:' + W + 'px;height:' + Hh + 'px;opacity:.85;display:' + (i === RD.i ? 'block' : 'none') + '">').join('');
+  RD.imgs = [...L.querySelectorAll('img')];
+  const sl = $('#rT'); sl.max = frames.length - 1; sl.value = RD.i;
+  sl.oninput = () => { stopRadar(); $('#rplay').textContent = '▶'; showFrame(+sl.value); };
+  showFrame(RD.i);
+  if (frames.length > 1) playRadar();
+}
+function showFrame(i) {
+  RD.i = i; RD.imgs.forEach((im, j) => im.style.display = j === i ? 'block' : 'none');
+  const t = RD.frames[i], l = $('#rL'), s = $('#rT'); if (l) l.textContent = t ? hm(t) : 'récent'; if (s) s.value = i;
+}
+function playRadar() {
+  stopRadar(); let hold = 0; const b = $('#rplay'); if (b) b.textContent = '❚❚';
+  RD.timer = setInterval(() => { if (!$('#rad')) return stopRadar(); if (RD.i === RD.frames.length - 1 && hold++ < 3) return; hold = 0; showFrame((RD.i + 1) % RD.frames.length); }, 450);
+}
+
+/* ===================== Réglages et DEV ===================== */
+function mSettings() {
+  const b = (act, v, cur, lbl) => '<button class="btn' + (cur ? ' on' : '') + '" data-act="' + act + '" data-v="' + v + '">' + lbl + '</button>';
+  let h = '<h4>Thème</h4><div class="bg">' + b('theme', 'auto', SET.theme === 'auto', 'Auto (soleil)') + b('theme', 'light', SET.theme === 'light', 'Clair') + b('theme', 'dark', SET.theme === 'dark', 'Sombre') + '</div>' +
+    '<h4>Taille du texte</h4><div class="bg">' + b('scale', '-', false, 'A−') + '<span style="align-self:center;font-weight:850;min-width:3rem;text-align:center">' + Math.round(SET.scale * 100) + ' %</span>' + b('scale', '+', false, 'A+') + b('scale', '1', false, 'Défaut') + '</div>' +
+    '<h4>Actualisation automatique</h4><div class="bg">' + [5, 10, 15, 30].map(m => b('refint', m, SET.refresh === m, m + ' min')).join('') + '</div>' +
+    '<h4>Liens</h4><p><a class="lnk" href="' + CFG.siteWeb + '" target="_blank" rel="noopener">Site officiel ↗</a> · <a class="lnk" href="' + CFG.horaireWeb + '" target="_blank" rel="noopener">Horaire ↗</a> · ' +
+    '<a class="lnk" href="https://meteo.gc.ca/fr/location/index.html?coords=45.885,-74.123" target="_blank" rel="noopener">Météo Canada ↗</a> · <a class="lnk" href="https://www.quebec511.info/" target="_blank" rel="noopener">Québec 511 ↗</a></p>' +
+    '<h4>Données</h4><div class="bg"><button class="btn" data-act="clearCache">Vider le cache</button><button class="btn" data-act="chClear">Effacer journal chrono</button></div>' +
+    '<h4>Développeur</h4><div class="bg"><button class="btn dng" data-act="dev">DEV</button></div>' +
+    '<p class="mute" style="font-size:.66rem">Version ' + CFG.version + ' · Sources : site du Domaine des Pays d\'en Haut, Open-Meteo, Environnement et Changement climatique Canada. Outil indicatif : les consignes du superviseur ont priorité.</p>';
+  openModal('Réglages', h);
+}
+function mDevCode() {
+  openModal('Code développeur', '<p>Entrer le code pour activer le mode DEV (simulation de conditions, voyage dans le temps, diagnostic).</p>' +
+    '<input id="devCode" class="inp" type="text" autocapitalize="characters" autocomplete="off" placeholder="Code">' +
+    '<div class="bg"><button class="btn pri" data-act="devOk">Valider</button><button class="btn" data-act="settings">Retour</button></div><p id="devMsg" class="c-bad"></p>');
+  setTimeout(() => { const i = $('#devCode'); if (i) i.focus(); }, 50);
+}
+function mDev() {
+  const sc = SCEN[DEV.scen] || SCEN.parfaite, T = DEV.T != null ? DEV.T : sc.T, ws = DEV.ws != null ? DEV.ws : sc.ws, wg = DEV.wg != null ? DEV.wg : sc.wg;
+  const sl = (id, lbl, min, max, step, v, unit) => '<div class="sl"><span>' + lbl + '</span><input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + v + '"><b id="' + id + 'V">' + v + unit + '</b></div>';
+  const st = k => D.err[k] ? '<b class="c-bad">erreur</b> <span class="mute">' + esc(D.err[k]).slice(0, 60) + '</span>' : D[k] ? '<b class="c-ok">OK</b> <span class="mute">' + hm(D[k].t) + '</span>' : '<span class="mute">—</span>';
+  const shiftTxt = DEV.shift ? (DEV.shift > 0 ? '+' : '−') + dur(Math.abs(DEV.shift)) : 'aucun';
+  let h = '<div class="bg"><button class="btn' + (DEV.sim ? ' on' : '') + '" data-act="devSim">Simulation : ' + (DEV.sim ? 'ACTIVE' : 'inactive') + '</button>' +
+    '<button class="btn' + (DEV.siteOpen ? ' on' : '') + '" data-act="devSite">Site simulé : ' + (DEV.siteOpen ? 'ouvert' : 'fermé') + '</button></div>' +
+    '<h4>Scénarios</h4><div class="bg">' + Object.keys(SCEN).map(k => '<button class="btn' + (DEV.scen === k ? ' on' : '') + '" data-act="devScen" data-v="' + k + '">' + SCEN[k].nom + '</button>').join('') + '</div>' +
+    '<h4>Réglages fins</h4>' + sl('dvT', 'Température', -45, 15, 1, Math.round(T), '°') + sl('dvW', 'Vent', 0, 90, 1, ws, '') + sl('dvG', 'Rafales', 0, 120, 1, wg, '') + sl('dvS', 'Neige ×', 0, 4, 0.5, DEV.snx, '') +
+    '<h4>Voyage dans le temps (décalage : ' + shiftTxt + ')</h4><div class="bg">' + [['-24', '−24 h'], ['-1', '−1 h'], ['1', '+1 h'], ['24', '+24 h'], ['168', '+7 j']].map(([v, l]) => '<button class="btn" data-act="devShift" data-v="' + v + '">' + l + '</button>').join('') +
+    '<button class="btn" data-act="devJan">Samedi 16 janv. 14 h</button><button class="btn" data-act="devShift" data-v="0">Maintenant</button></div>' +
+    '<h4>Diagnostic des sources</h4>' + R('Open-Meteo', st('om')) + R('ECCC page-ville', st('ec')) + R('ECCC alertes', st('al')) + R('Site officiel', st('site')) +
+    '<div class="bg"><button class="btn" data-act="refresh">Recharger tout</button><button class="btn" data-act="devLock">Verrouiller DEV</button></div>';
+  openModal('DEV · mode test', h);
+  const bind = (id, key, unit) => { const el = $('#' + id); if (!el) return; el.oninput = () => { DEV[key] = +el.value; $('#' + id + 'V').textContent = el.value + unit; saveDev(); if (DEV.sim) render(); }; };
+  bind('dvT', 'T', '°'); bind('dvW', 'ws', ''); bind('dvG', 'wg', ''); bind('dvS', 'snx', '');
+}
+
+/* ===================== Événements ===================== */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const a = el.dataset.act, v = el.dataset.v;
+  if (a === 'close' || (el.id === 'ov' && e.target === el)) return closeModal();
+  switch (a) {
+    case 'refresh': fetchAll(); break;
+    case 'settings': mSettings(); break;
+    case 'm-wx': mWx(); break;
+    case 'm-glide': mGlide(); break;
+    case 'm-snow': mSnow(); break;
+    case 'm-cold': mCold(); break;
+    case 'm-day': mDay(); break;
+    case 'm-hours': mHours(); break;
+    case 'm-fc': mFc(); break;
+    case 'alerts': mAlerts(); break;
+    case 'zone': e.stopPropagation(); mZone(el.dataset.id); break;
+    case 'radar': openRadar(); break;
+    case 'rz': RD.z = clamp(RD.z + (+v), 6, 11); drawRadar(); break;
+    case 'rplay': if (RD.timer) { stopRadar(); el.textContent = '▶'; } else playRadar(); break;
+    case 'rlayer': RD.layer = v; openRadar(); break;
+    case 'chrono': openChrono(el.dataset.id); break;
+    case 'chGo':
+      chSyncInputs();
+      if (!CH.run) { CH.run = true; CH.t0 = performance.now(); CH.el = 0; openChrono(); chTick(); }
+      else { CH.run = false; cancelAnimationFrame(CH.raf); CH.el = performance.now() - CH.t0; openChrono(); }
+      break;
+    case 'chReset': CH.run = false; cancelAnimationFrame(CH.raf); CH.el = 0; chSyncInputs(); openChrono(); break;
+    case 'chSave': {
+      chSyncInputs(); const dist = LS.get('gpdh.dist', {})[CH.zone], r = num(($('#chR') || {}).value), s = CH.el / 1000;
+      let kmh = r || (dist && s > 0 ? dist / s * 3.6 : null);
+      if (kmh && kmh > 150) kmh = null;
+      if (!kmh && !(s > 0)) break;
+      const log = LS.get('gpdh.log', []); log.unshift({t:NOW(), z:CH.zone, s:s > 0 && !r ? s : null, kmh}); LS.set('gpdh.log', log.slice(0, 60));
+      CH.el = 0; openChrono(); render(); break;
+    }
+    case 'chClear': LS.set('gpdh.log', []); render(); if ($('#chT')) openChrono(); else mSettings(); break;
+    case 'theme': SET.theme = v; saveSet(); render(); mSettings(); break;
+    case 'scale': SET.scale = v === '1' ? 1 : clamp(Math.round((SET.scale + (v === '+' ? 0.05 : -0.05)) * 100) / 100, 0.75, 1.3); saveSet(); render(); mSettings(); break;
+    case 'refint': SET.refresh = +v; saveSet(); schedule(); mSettings(); break;
+    case 'clearCache': ['gpdh.c.om', 'gpdh.c.ec', 'gpdh.c.al', 'gpdh.c.site'].forEach(LS.del); D.om = D.ec = D.al = D.site = null; render(); fetchAll(); mSettings(); break;
+    case 'dev': if (DEV.unlocked) mDev(); else mDevCode(); break;
+    case 'devOk': {
+      const c = (($('#devCode') || {}).value || '').trim().toUpperCase();
+      if (c === 'BURGER') { DEV.unlocked = true; saveDev(); mDev(); } else { const m = $('#devMsg'); if (m) m.textContent = 'Code invalide.'; }
+      break;
+    }
+    case 'devSim': DEV.sim = !DEV.sim; saveDev(); render(); mDev(); break;
+    case 'devSite': DEV.siteOpen = !DEV.siteOpen; saveDev(); render(); mDev(); break;
+    case 'devScen': DEV.scen = v; DEV.T = DEV.ws = DEV.wg = null; DEV.snx = 1; DEV.sim = true; saveDev(); render(); mDev(); break;
+    case 'devShift': DEV.shift = v === '0' ? 0 : (DEV.shift || 0) + (+v) * HOUR; saveDev(); render(); mDev(); break;
+    case 'devJan': DEV.shift = localMs(2027, 1, 16, 14, 0) - Date.now(); DEV.sim = true; saveDev(); render(); mDev(); break;
+    case 'devLock': DEV.unlocked = false; DEV.sim = false; DEV.shift = 0; saveDev(); render(); closeModal(); break;
+  }
+});
+$('#ov').addEventListener('click', e => { if (e.target.id === 'ov') closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); if (e.key === 'Enter' && $('#devCode')) $('[data-act="devOk"]').click(); });
+document.addEventListener('change', e => { if (e.target.id === 'chZ') { CH.zone = e.target.value; openChrono(); } if (e.target.id === 'chD') chSyncInputs(); });
+
+/* ===================== Démarrage ===================== */
+let refreshTimer = 0;
+function schedule() { clearInterval(refreshTimer); refreshTimer = setInterval(() => fetchAll(), SET.refresh * 60000); }
+window.addEventListener('resize', () => { clearTimeout(window._rz); window._rz = setTimeout(() => { renderHours(); if ($('#rad')) drawRadar(); }, 150); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - D.last > 3 * 60000) fetchAll(); });
+setInterval(() => { if (!document.hidden) render(); }, 30000);
+render();
+fetchAll();
+schedule();
+</script>
+</body>
+</html>
