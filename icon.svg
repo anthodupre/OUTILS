@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0" stop-color="#0a1a4a"/>
+      <stop offset="0.55" stop-color="#1d4fd6"/>
+      <stop offset="1" stop-color="#5aa8f7"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.78" cy="0.2" r="0.5">
+      <stop offset="0" stop-color="#d6ecff" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#d6ecff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="mnt" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#dcecff" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#8fbff3" stop-opacity="0.45"/>
+    </linearGradient>
+    <linearGradient id="snow" x1="0" y1="0" x2="0.25" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#cfe1f7"/>
+    </linearGradient>
+    <linearGradient id="tube" x1="0.1" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#ffc977"/>
+      <stop offset="0.42" stop-color="#ff7d1f"/>
+      <stop offset="1" stop-color="#d63d0b"/>
+    </linearGradient>
+    <linearGradient id="side" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c2410c"/>
+      <stop offset="1" stop-color="#8a2a06"/>
+    </linearGradient>
+    <linearGradient id="hole" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9a3108"/>
+      <stop offset="0.35" stop-color="#ff8a2e"/>
+      <stop offset="0.36" stop-color="#0d1f52"/>
+      <stop offset="1" stop-color="#1b3a86"/>
+    </linearGradient>
+    <radialGradient id="shadow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#1e3a8a" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#1e3a8a" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="hc"><ellipse cx="8" cy="-6" rx="124" ry="58"/></clipPath>
+    <linearGradient id="holeShade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5b8fd6" stop-opacity="0.55"/>
+      <stop offset="0.6" stop-color="#5b8fd6" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="blur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="8"/></filter>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#sky)"/>
+  <rect width="1024" height="1024" fill="url(#glow)"/>
+  <g fill="#ffffff">
+    <circle cx="150" cy="140" r="8" opacity=".9"/><circle cx="290" cy="90" r="5" opacity=".7"/><circle cx="430" cy="160" r="6" opacity=".75"/>
+    <circle cx="90" cy="270" r="5" opacity=".55"/><circle cx="560" cy="80" r="4" opacity=".55"/><circle cx="905" cy="300" r="5" opacity=".5"/>
+  </g>
+  <path d="M-10 520 L210 300 L330 410 L520 230 L760 470 L880 390 L1034 500 V1024 H-10Z" fill="url(#mnt)"/>
+  <path d="M520 230 L585 295 L548 288 L520 312 L494 286 L462 290Z M210 300 L252 342 L222 338 L200 356 L182 330Z M880 390 L918 418 L890 416 L872 430Z" fill="#ffffff" opacity=".95"/>
+  <path d="M-10 590 C 300 560, 640 640, 1034 800 V1034 H-10 Z" fill="url(#snow)"/>
+  <g stroke="#8db6ea" stroke-linecap="round" fill="none">
+    <path d="M60 660 C 140 652, 210 656, 270 668" stroke-width="22" opacity=".9"/>
+    <path d="M96 728 C 170 722, 228 728, 286 742" stroke-width="18" opacity=".75"/>
+    <path d="M40 600 C 110 594, 170 596, 226 606" stroke-width="14" opacity=".6"/>
+  </g>
+  <ellipse cx="560" cy="790" rx="300" ry="70" fill="url(#shadow)" filter="url(#blur)"/>
+  <g transform="translate(548 676) rotate(13)">
+    <ellipse cx="0" cy="44" rx="272" ry="142" fill="url(#side)"/>
+    <ellipse cx="0" cy="0" rx="272" ry="142" fill="url(#tube)"/>
+    <ellipse cx="0" cy="-2" rx="196" ry="96" fill="none" stroke="#ffe3bf" stroke-width="46" opacity=".32" filter="url(#blur)"/>
+    <ellipse cx="0" cy="22" rx="250" ry="122" fill="none" stroke="#7c2405" stroke-width="18" opacity=".22" filter="url(#blur)"/>
+    <g clip-path="url(#hc)">
+      <rect x="-140" y="-70" width="300" height="140" fill="#8f2d07"/>
+      <ellipse cx="8" cy="30" rx="128" ry="56" fill="#e4eefb"/>
+      <ellipse cx="8" cy="30" rx="128" ry="56" fill="url(#holeShade)"/>
+    </g>
+    <path d="M-206 -64 C -132 -128, 64 -144, 196 -98" stroke="#ffffff" stroke-width="24" stroke-linecap="round" fill="none" opacity=".62"/>
+    <path d="M-240 8 C -236 -30, -214 -58, -188 -78" stroke="#ffffff" stroke-width="12" stroke-linecap="round" fill="none" opacity=".35"/>
+  </g>
+  <g fill="#ffffff">
+    <circle cx="296" cy="760" r="18"/><circle cx="252" cy="790" r="13" opacity=".95"/><circle cx="320" cy="808" r="11" opacity=".9"/>
+    <circle cx="236" cy="748" r="9" opacity=".85"/><circle cx="280" cy="836" r="8" opacity=".8"/><circle cx="210" cy="812" r="6" opacity=".7"/>
+  </g>
+</svg>
