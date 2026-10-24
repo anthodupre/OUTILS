@@ -378,7 +378,7 @@ function omURL() {
   const hr = 'temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation_probability,precipitation,rain,showers,snowfall,snow_depth,weather_code,cloud_cover,visibility,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index,is_day,shortwave_radiation';
   const dy = 'sunrise,sunset,temperature_2m_max,temperature_2m_min,precipitation_sum,snowfall_sum,uv_index_max,wind_gusts_10m_max';
   return 'https://api.open-meteo.com/v1/forecast?latitude=' + CFG.lat + '&longitude=' + CFG.lon + '&current=' + cur + '&hourly=' + hr + '&daily=' + dy +
-    '&past_days=2&forecast_days=3&timezone=' + encodeURIComponent(CFG.tz) + '&timeformat=unixtime&wind_speed_unit=kmh';
+    '&past_days=3&forecast_days=3&timezone=' + encodeURIComponent(CFG.tz) + '&timeformat=unixtime&wind_speed_unit=kmh';
 }
 function normOM(d) {
   const h = d.hourly, H = [], g = (k, i) => (h[k] ? h[k][i] : null);
@@ -500,7 +500,7 @@ function simData() {
   const sc = SCEN[DEV.scen] || SCEN.parfaite, now = NOW(), t0 = Math.floor(now / HOUR) * HOUR, h0 = lp(t0).h;
   const T0 = DEV.T != null ? DEV.T : sc.T, ws0 = DEV.ws != null ? DEV.ws : sc.ws, wg0 = DEV.wg != null ? DEV.wg : sc.wg, snx = DEV.snx;
   const dT = T0 - sc.T, H = [];
-  for (let k = -48; k <= 72; k++) {
+  for (let k = -72; k <= 72; k++) {
     const t = t0 + k * HOUR, lh = lp(t).h, o = sc.f(k) || {};
     const di = sc.amp * (Math.cos(2 * Math.PI * (lh - 15) / 24) - Math.cos(2 * Math.PI * (h0 - 15) / 24));
     let T = (o.Tset != null ? o.Tset + dT : T0 + di);
@@ -512,7 +512,7 @@ function simData() {
       sd:0.4, wc, cc:o.cc != null ? o.cc : 50, vis:o.vis || 24000, ws:ws0 * (0.85 + 0.3 * Math.random()), wd:290, wg:wg0 * (0.85 + 0.3 * Math.random()),
       uv:day ? sunk * (o.uvx ? 5 : 2) : 0, day, sw:day ? sunk * (o.uvx ? 750 : 420) * (1 - (o.cc || 0) / 130) : 0});
   }
-  const i0 = 48, c = H[i0];
+  const i0 = 72, c = H[i0];
   const C = {t:now, T:c.T, RH:c.RH, app:c.app, day:c.day, pr:c.pr, rain:c.rain, sn:c.sn, wc:c.wc, cc:c.cc, p:1015, ws:ws0, wd:290, wg:wg0};
   const DY = [];
   for (let d = -2; d <= 2; d++) {
@@ -534,8 +534,6 @@ function simSite() {
 }
 
 /* ===================== Analyse : indices et recommandations ===================== */
-/* Courbe vitesse/température de la neige (indice 0-100). Pic vers -4 °C; neige sèche très froide = accroche; > 0 °C = neige mouillée. */
-const TCURVE = [[-35,36],[-25,44],[-18,54],[-12,63],[-7,71],[-4,77],[-2,77],[-1,73],[0,64],[1,53],[2,45],[4,37],[8,30],[15,24]];
 const GLV = [{max:38, k:1, n:'Lente'}, {max:56, k:2, n:'Modérée'}, {max:76, k:3, n:'Rapide'}, {max:999, k:4, n:'Très rapide'}];
 const glv = s => GLV.find(g => s < g.max);
 const SECT = [
@@ -547,36 +545,79 @@ const SECT = [
 const adj = (s, dv) => clamp(Math.round(s + (dv || 0)), 3, 100);
 const ABR = {1:'Lente', 2:'Modér.', 3:'Rapide', 4:'T. rapide'};
 const spB = lv => lv ? '<span class="sp k' + lv.k + '" style="font-size:.62rem">' + ABR[lv.k] + '</span>' : '—';
-function rng(H, a, b) { const out = []; for (let j = Math.max(0, a); j <= Math.min(H.length - 1, b); j++) out.push(H[j]); return out; }
 function sumK(arr, k) { let s = 0, any = false; for (const x of arr) if (x[k] != null) { s += x[k]; any = true; } return any ? s : null; }
 function maxK(arr, k) { let m = null; for (const x of arr) if (x[k] != null && (m == null || x[k] > m)) m = x[k]; return m; }
-function glideAt(H, i) {
-  const h = H[i]; if (!h || h.T == null) return null;
-  const F = [], base = interp(TCURVE, h.T); let s = base;
-  F.push({ico:'🌡️', txt:'Température ' + tf(h.T) + (h.T < -18 ? ' : neige sèche, accroche' : h.T > 0.5 ? ' : neige mouillée' : h.T >= -5 ? ' : neige dure, rapide' : h.T >= -10 ? ' : favorable' : ''), v:Math.round(base - 60)});
-  const s6 = sumK(rng(H, i - 5, i), 'sn'), s24 = sumK(rng(H, i - 23, i - 6), 'sn');
-  if (s6 != null) {
-    const fresh = s6 + 0.4 * (s24 || 0);
-    if (fresh >= 0.3) { const p = -Math.min(38, fresh * 6); s += p; F.push({ico:'❄️', txt:'Neige fraîche ' + cm(s6 + (s24 || 0)) + ' en 24 h', v:Math.round(p)}); }
-  }
-  const frz = rng(H, i - 23, i).some(x => FRZ.includes(x.wc));
-  const maxPrev = maxK(rng(H, i - 36, i - 1), 'T'), liq = sumK(rng(H, i - 36, i), 'rain') || 0;
-  let ice = false;
-  const covered = s6 != null && (s6 + 0.4 * (s24 || 0)) >= 1.5;   // croûte recouverte de neige fraîche
-  if (frz && h.T <= 0.5) {
-    if (covered) { s += 6; F.push({ico:'🧊', txt:'Verglas sous la neige fraîche', v:6}); }
-    else { s += 22; ice = true; F.push({ico:'🧊', txt:'Pluie verglaçante récente : surface glacée', v:22}); }
-  } else if (h.T <= -1 && maxPrev != null && (maxPrev >= 1 || liq >= 1)) {
-    const p = Math.round(Math.min(20, 8 + Math.max(0, maxPrev) * 1.5 + liq * 2));
-    if (covered) { s += 5; F.push({ico:'🧊', txt:'Croûte glacée sous la neige fraîche', v:5}); }
-    else { s += p; ice = true; F.push({ico:'🧊', txt:'Regel après dégel : croûte glacée', v:p}); }
-  }
-  if ((h.rain || 0) >= 0.2 && h.T > 0) { s -= 10; F.push({ico:'🌧️', txt:'Pluie : neige lourde et collante', v:-10}); }
-  if (h.day && h.sw > 320 && h.T > -6) { const p = -Math.round(Math.min(12, (h.sw - 320) / 30)); if (p < 0) { s += p; F.push({ico:'☀️', txt:'Soleil fort : la neige ramollit', v:p}); } }
-  if (h.ws >= 35 && s6 != null && (s6 + (s24 || 0)) >= 1) { s -= 4; F.push({ico:'💨', txt:'Vent : neige soufflée dans les pistes', v:-4}); }
-  s = clamp(Math.round(s), 3, 100);
-  return {s, lv:glv(s), F, ice};
+/* ===================== Modèle de vitesse de glisse =====================
+   Simulation heure par heure de la surface des couloirs depuis 72 h :
+   - température de la surface de la neige (plus froid = neige dure = plus rapide);
+   - neige fraîche non tassée (ralentit, se tasse avec le temps et le passage des tubes);
+   - humidité de surface : fonte au-dessus de 0, pluie, soleil près de 0 (neige mouillée = lent);
+   - croûte de glace : regel d'une neige mouillée ou verglas (très rapide), recouverte par la neige fraîche;
+   - âge de la neige : plusieurs jours sans neige = neige tassée et dure (plus rapide);
+   - vent fort avec neige disponible : neige soufflée dans les couloirs (plus lent). */
+const TS_CURVE = [[-30,80],[-20,76],[-15,72],[-10,68],[-6,63],[-3,58],[-1,52],[0,46]];
+function surfTemp(h) {
+  if (h.T == null) return null;
+  if (h.T > 0) return 0;
+  const cc = h.cc != null ? h.cc : 60, ws = h.ws || 0;
+  let ts = h.T;
+  if (h.day) ts += (h.sw || 0) / 120 * (1 - Math.min(ws, 40) / 80);              // le soleil réchauffe la surface
+  else ts -= 3 * (1 - cc / 100) * (ws < 10 ? 1 : ws < 25 ? 0.6 : 0.3);          // nuit claire et calme : la surface refroidit
+  return Math.min(0, ts);
 }
+const GCACHE = new WeakMap();
+function glideSeries(H) {
+  if (GCACHE.has(H)) return GCACHE.get(H);
+  const out = []; let fresh = 0, wet = 0, ice = 0, age = 48; const snowLog = [];
+  for (let i = 0; i < H.length; i++) {
+    const h = H[i]; if (!h || h.T == null) { out.push(null); continue; }
+    const T = h.T, sn = h.sn != null ? Math.max(0, h.sn) : 0, rain = h.rain || 0;
+    const frz = FRZ.includes(h.wc) || (rain >= 0.1 && T <= 0);
+    const lh = lp(h.t).h, open = lh >= 9 && lh < 20;
+    /* Neige fraîche : s'accumule, puis se tasse (plus vite si humide ou pendant les heures d'ouverture) */
+    const tau = (T > -2 ? 6 : 12) * (open ? 0.7 : 1);
+    fresh = fresh * Math.exp(-1 / tau) + sn;
+    if (fresh < 0.05) fresh = 0;
+    age = sn >= 0.3 ? 0 : age + 1;
+    snowLog.push(sn); if (snowLog.length > 48) snowLog.shift();
+    const snow48 = snowLog.reduce((a, x) => a + x, 0);
+    /* Humidité de surface : apport de fonte, puis regel en croûte quand il refait froid */
+    let m = 0;
+    if (T > 0) m += 0.1 * T;
+    if (rain > 0 && T > 0.5) m += 0.2 * rain;
+    if (h.day && T > -4 && (h.sw || 0) > 300) m += (h.sw - 300) / 1500 * (T > -1 ? 1.5 : 1);
+    if (T > -1 && (h.RH || 0) >= 95 && !frz) m += 0.03;
+    wet = Math.min(1, wet + m);
+    if (T < 0 && m === 0 && wet > 0) {
+      const clear = !h.day && (h.cc == null || h.cc < 50);
+      const w2 = wet * Math.exp(-(0.15 * -T + (clear ? 0.1 : 0)));
+      ice = Math.min(1, ice + (wet - w2) * 0.9);
+      wet = w2 < 0.02 ? 0 : w2;
+    }
+    /* Glace : verglas direct, fond au-dessus de 0, s'use lentement, enfouie sous une bonne chute */
+    if (frz) { ice = Math.min(1, ice + 0.4 * Math.max(0.5, rain || h.pr || 0)); wet *= 0.5; }   // la pluie verglaçante gèle en surface
+    if (T > 0) ice *= Math.exp(-0.15 * T);
+    ice *= Math.exp(-1 / 72) * Math.exp(-sn / 5);
+    if (ice < 0.02) ice = 0;
+    /* Vitesse (indice 0-100) */
+    const Ts = surfTemp(h), base = interp(TS_CURVE, Ts), F = [];
+    let s = base;
+    F.push({ico:'🌡️', v:Math.round(base - 60), txt:Ts <= -15 ? 'Neige très froide et dure (surface ' + tf(Ts) + ')' : Ts <= -6 ? 'Neige froide et ferme (surface ' + tf(Ts) + ')' :
+      Ts <= -1 ? 'Neige près du point de fonte (surface ' + tf(Ts) + ')' : 'Surface à 0° : la neige ramollit'});
+    if (wet >= 0.08) { const p = -35 * wet; s += p; F.push({ico:'💧', v:Math.round(p), txt:wet < 0.3 ? 'Neige un peu humide' : wet < 0.7 ? 'Neige mouillée, collante' : 'Neige détrempée (slush)'}); }
+    if (fresh >= 0.3) { const p = -45 * (1 - Math.exp(-fresh / 3)); s += p; F.push({ico:'❄️', v:Math.round(p), txt:'Neige fraîche non tassée ≈ ' + cm(fresh)}); }
+    if (sn >= 0.2) { const p = -Math.min(8, sn * 5); s += p; F.push({ico:'🌨️', v:Math.round(p), txt:'Neige en cours ' + cm(sn) + '/h'}); }
+    const cover = 1 - Math.exp(-fresh / 1.5), iceEff = ice * (1 - cover);
+    if (ice >= 0.1 && 25 * iceEff >= 0.5) { const p = 25 * iceEff; s += p; F.push({ico:'🧊', v:Math.round(p), txt:cover > 0.5 ? 'Croûte glacée sous la neige fraîche' : 'Croûte glacée (regel ou verglas)'}); }
+    if (fresh < 0.5 && wet < 0.3) { const p = 6 * Math.min(1, age / 72) * (1 - wet); if (p >= 1) { s += p; F.push({ico:'⏳', v:Math.round(p), txt:'Neige tassée depuis ' + (age >= 48 ? Math.floor(age / 24) + ' jours' : Math.round(age) + ' h')}); } }
+    if ((h.ws || 0) >= 30 && T <= -2 && (fresh >= 1 || sn > 0 || snow48 >= 3)) { const p = (h.wg || 0) >= 60 ? -8 : -6; s += p; F.push({ico:'💨', v:p, txt:'Vent : neige soufflée dans les couloirs'}); }
+    s = clamp(Math.round(s), 3, 100);
+    out.push({s, lv:glv(s), F, ice:iceEff >= 0.35, wet, fresh, iceRaw:ice, Ts, age});
+  }
+  GCACHE.set(H, out);
+  return out;
+}
+function glideAt(H, i) { return glideSeries(H)[i] || null; }
 const RISK = [
   {min:-9,  n:'Faible',     cls:'ok',   frost:'Peu probable', txt:'Inconfort léger.'},
   {min:-27, n:'Modéré',     cls:'yel',  frost:'Peu probable', txt:'Risque d\'hypothermie lors d\'une longue exposition.'},
@@ -984,9 +1025,10 @@ function mGlide() {
   }
   h += '</table><h4>Heure par heure (indice général)</h4><div class="mini">' + (V.glideH || []).slice(0, 13).map(x => '<span class="k' + (x.ice ? 'ice' : x.lv.k) + '" style="font-size:.6rem">' + lp(x.t).h + 'h<br>' + x.s + '</span>').join('') + '</div>';
   h += '<h4>Repères</h4><p style="font-size:.76rem"><span class="sp k1">Lente</span> <span class="sp k2">Modérée</span> <span class="sp k3">Rapide</span> <span class="sp k4">Très rapide</span> <span class="sp kice">Glacée</span><br>' +
-    'Calcul selon la température, la neige fraîche, le regel et le verglas, la pluie, le soleil et le vent (+ = plus rapide, − = plus lent). ' +
-    'Les zones plus difficiles (pentes plus raides) glissent plus vite : écart estimé de −14 (bout de chou) à +7 (expert). ' +
-    'Estimation automatique.</p>';
+    '<b>Comment c\'est calculé.</b> L\'outil suit l\'état de la neige des couloirs heure par heure depuis 3 jours. Plus la neige est froide, plus elle est dure et rapide. ' +
+    'La neige mouillée (au-dessus de 0°, pluie, soleil près de 0°) ralentit fortement. La neige fraîche non tassée ralentit, puis se tasse en quelques heures avec le passage des tubes. ' +
+    'Quand une neige mouillée regèle, ou avec du verglas, une croûte glacée très rapide se forme, sauf si de la neige fraîche la recouvre. Après quelques jours sans neige, la neige est bien tassée et un peu plus rapide. ' +
+    'Le vent fort ramène de la neige dans les couloirs. Les zones plus difficiles glissent plus vite (de −14 pour bout de chou à +7 pour expert).<br>Indice : moins de 38 lente · 38 à 55 modérée · 56 à 75 rapide · 76 et plus très rapide.</p>';
   openModal('Vitesse de glisse · zones', h);
 }
 function bars(H, i0, back, fwd) {
