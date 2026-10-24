@@ -15,6 +15,8 @@ Tableau de bord pour les employés qui travaillent dehors aux Glissades. Il ne m
 
 **Barre du bas** : 24 h (heure par heure détaillé), Radar (animé, dernière heure autour du Domaine), Chrono (km/h par zone), Alertes d'Environnement Canada. Une pastille météo en haut ouvre le détail de la météo.
 
+**Icône d'application** : un tube qui glisse sur une pente enneigée (`icon.svg`, avec les versions PNG et le manifeste). Elle apparaît quand on ajoute glisse.ca à l'écran d'accueil.
+
 **Réglages ⚙** : thème, taille du texte, fréquence d'actualisation. Le bouton **DEV** demande le code `BURGER` et ouvre le mode test : scénarios simulés, réglages fins, voyage dans le temps, diagnostic des sources.
 
 **Aucun entretien prévu** : l'horaire est un horaire type de saison, calqué sur 2026-2027 et répété chaque année. Les dates de la relâche sont approximatives pour les saisons suivantes. L'état ouvert ou fermé vient du site du Domaine. Sources gratuites, sans clé : Open-Meteo, Environnement et Changement climatique Canada (GeoMet) et le site du Domaine (état des zones seulement).
