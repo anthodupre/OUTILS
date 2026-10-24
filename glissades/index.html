@@ -494,7 +494,6 @@ const SECT = [
 ];
 const adj = (s, dv) => clamp(Math.round(s + (dv || 0)), 3, 100);
 const ABR = {1:'Lente', 2:'Modér.', 3:'Rapide', 4:'T. rapide'};
-const RIDERS = {1:'haut de plage', 2:'milieu', 3:'bas de plage', 4:'minimum'};
 const SAB = {1:'Lent', 2:'Mod.', 3:'Rap.', 4:'T.rap'};
 const spB = lv => lv ? '<span class="sp k' + lv.k + '" style="font-size:.62rem">' + ABR[lv.k] + '</span>' : '—';
 function rng(H, a, b) { const out = []; for (let j = Math.max(0, a); j <= Math.min(H.length - 1, b); j++) out.push(H[j]); return out; }
@@ -528,29 +527,14 @@ function glideAt(H, i) {
   return {s, lv:glv(s), F, ice};
 }
 const RISK = [
-  {min:-9,  n:'Faible',     cls:'ok',   frost:'Peu probable', txt:'Inconfort léger. Habillement d\'hiver normal.'},
-  {min:-27, n:'Modéré',     cls:'yel',  frost:'Peu probable', txt:'Risque d\'hypothermie si exposition prolongée sans protection. Couvrir la peau.'},
-  {min:-39, n:'Élevé',      cls:'warn', frost:'10 à 30 min',  txt:'La peau exposée peut geler en 10 à 30 minutes. Surveiller nez, joues, oreilles, doigts.'},
-  {min:-47, n:'Très élevé', cls:'bad',  frost:'5 à 10 min',   txt:'La peau exposée peut geler en 5 à 10 minutes. Couvrir toute la peau, réduire l\'exposition.'},
-  {min:-54, n:'Grave',      cls:'bad',  frost:'2 à 5 min',    txt:'La peau exposée peut geler en 2 à 5 minutes. Limiter fortement le travail extérieur.'},
-  {min:-999, n:'Extrême',   cls:'bad',  frost:'< 2 min',      txt:'La peau exposée peut geler en moins de 2 minutes. Danger : rester à l\'abri.'}
+  {min:-9,  n:'Faible',     cls:'ok',   frost:'Peu probable', txt:'Inconfort léger.'},
+  {min:-27, n:'Modéré',     cls:'yel',  frost:'Peu probable', txt:'Risque d\'hypothermie lors d\'une longue exposition.'},
+  {min:-39, n:'Élevé',      cls:'warn', frost:'10 à 30 min',  txt:'La peau exposée peut geler en 10 à 30 minutes.'},
+  {min:-47, n:'Très élevé', cls:'bad',  frost:'5 à 10 min',   txt:'La peau exposée peut geler en 5 à 10 minutes.'},
+  {min:-54, n:'Grave',      cls:'bad',  frost:'2 à 5 min',    txt:'La peau exposée peut geler en 2 à 5 minutes.'},
+  {min:-999, n:'Extrême',   cls:'bad',  frost:'< 2 min',      txt:'La peau exposée peut geler en moins de 2 minutes.'}
 ];
 const riskOf = wc => wc == null ? null : RISK.find(r => Math.round(wc) >= r.min);
-/* Horaire réchauffement/travail ACGIH (quart de 4 h) : [max min de travail / nb de pauses de 10 min] */
-const ACG = [['N','N','75/2','55/3','40/4'], ['N','75/2','55/3','40/4','30/5'], ['75/2','55/3','40/4','30/5','X'], ['55/3','40/4','30/5','X','X'], ['40/4','30/5','X','X','X'], ['30/5','X','X','X','X'], ['X','X','X','X','X']];
-const ACG_T = ['−26 à −28', '−29 à −31', '−32 à −34', '−35 à −37', '−38 à −39', '−40 à −42', '−43 et moins'];
-const ACG_W = ['Vent nul', '8 km/h', '16 km/h', '24 km/h', '32 km/h +'];
-function acgih(T, ws) {
-  if (T == null) return {short:'—', long:'—'};
-  const t = Math.round(T);
-  if (t > -26) return {short:'Normales', long:'Pauses normales (température au-dessus de −26 °C).', r:-1, c:-1};
-  const r = t >= -28 ? 0 : t >= -31 ? 1 : t >= -34 ? 2 : t >= -37 ? 3 : t >= -39 ? 4 : t >= -42 ? 5 : 6;
-  const w = ws || 0, c = w < 5 ? 0 : w <= 8 ? 1 : w <= 16 ? 2 : w <= 24 ? 3 : 4, v = ACG[r][c];
-  if (v === 'N') return {short:'Normales', long:'Pauses normales (1 pause chaude par 4 h).', r, c};
-  if (v === 'X') return {short:'Cesser (non urgent)', long:'Cesser tout travail extérieur non urgent.', r, c};
-  const [m, b] = v.split('/');
-  return {short:m + ' min · ' + b + ' pauses', long:'Travail continu max ' + m + ' min, puis pause de 10 min au chaud (' + b + ' pauses par 4 h).', r, c};
-}
 function snowMk(tw) {
   if (tw == null) return {n:'—', cls:''};
   if (tw <= -7) return {n:'Excellente', cls:'c-ok'};
@@ -644,24 +628,24 @@ function build() {
     let lv = 'ok';
     if ((sn.n12 || 0) >= 1 || sn.frzNext || sn.poudNext || sn.refreeze || (sn.p24 || 0) >= 5) lv = 'warn';
     if ((sn.p6 || 0) >= 2 || (sn.rate || 0) >= 0.5 || sn.frzNow || sn.frzPast || sn.iceNow || sn.poudNow) lv = 'bad';
-    sn.lv = lv; sn.lvTxt = lv === 'bad' ? 'REQUIS' : lv === 'warn' ? 'À PRÉVOIR' : 'OK';
+    sn.lv = lv; sn.lvTxt = lv === 'bad' ? 'IMPORTANT' : lv === 'warn' ? 'À NOTER' : 'OK';
     const A = [];
-    if (sn.frzNow || sn.frzPast) A.push('Verglas : casser la glace au pic et à la pelle (escaliers, allées, quais)');
-    else if (sn.iceNow) A.push('Regel : surfaces glacées, pic à glace et pelle sur allées et escaliers');
-    if ((sn.rate || 0) >= 0.5 || (sn.p6 || 0) >= 2) A.push('Déneiger : allées, escaliers, quais de tapis, stationnement');
-    else if (sn.snowing) A.push('Neige faible : surveiller escaliers et quais de tapis');
+    if (sn.frzNow || sn.frzPast) A.push('Verglas : glace sur escaliers, allées et quais (pic à glace / pelle)');
+    else if (sn.iceNow) A.push('Regel : allées et escaliers glacés (pic à glace / pelle)');
+    if ((sn.rate || 0) >= 0.5 || (sn.p6 || 0) >= 2) A.push('Accumulation sur allées, escaliers, quais de tapis et stationnement');
+    else if (sn.snowing) A.push('Neige faible sur escaliers et quais de tapis');
     if (sn.poudNow) A.push('Poudrerie : congères aux accès et fins de piste');
-    if (sn.start) A.push('Neige dès ' + hh(sn.start) + ' (≈ ' + cm(sn.n12) + ' / 12 h) : prévoir l\'équipe');
-    if (sn.refreeze) A.push('Regel vers ' + hh(sn.refreeze) + ' : prévoir pics à glace et pelles');
-    if (sn.frzNext && !sn.frzNow) A.push('Verglas prévu : préparer pics à glace et pelles');
+    if (sn.start) A.push('Neige dès ' + hh(sn.start) + ' (≈ ' + cm(sn.n12) + ' en 12 h)');
+    if (sn.refreeze) A.push('Regel vers ' + hh(sn.refreeze) + ' : surfaces mouillées glacées (pic à glace / pelle)');
+    if (sn.frzNext && !sn.frzNow) A.push('Verglas prévu dans les 12 h (pic à glace / pelle)');
     if (sn.poudNext) A.push('Poudrerie possible vers ' + hh(sn.poudNext));
-    if ((sn.p24 || 0) >= 5 && !A.length) A.push('Finition : bords de pistes, sorties de tapis, dépôt à tubes');
-    if (!A.length) A.push(S.lim ? 'Données de neige limitées (mode secours)' : 'Rien à prévoir — conditions sèches');
+    if ((sn.p24 || 0) >= 5 && !A.length) A.push(cm(sn.p24) + ' tombés en 24 h : bords de pistes, sorties de tapis et dépôt à tubes enneigés');
+    if (!A.length) A.push(S.lim ? 'Données de neige limitées (mode secours)' : 'Conditions sèches');
     sn.A = A; V.snow = sn;
   }
   /* Froid et sécurité */
   if (hi) {
-    const c = V.cur, co = {wc:c.feel, risk:riskOf(c.feel), work:acgih(c.T, c.ws)};
+    const c = V.cur, co = {wc:c.feel, risk:riskOf(c.feel)};
     const fut = H.filter(x => x.t > now && x.t <= now + 12 * HOUR && x.T != null);
     let w = null; for (const x of fut) { const v = windChill(x.T, x.ws); if (w == null || v < w.v) w = {v, t:x.t}; }
     co.worst = w; co.uv = c.uv; co.uvmax = V.today.uv != null ? V.today.uv : maxK(H.filter(x => ymd(x.t) === dk), 'uv');
@@ -674,8 +658,7 @@ function build() {
   else if (now < sc.om) { dy.state = 'Avant ouverture'; dy.cls = 'info'; dy.lbl = 'Ouverture dans'; dy.cd = dur(sc.om - now); }
   else if (now < sc.fm) { dy.state = 'Ouvert'; dy.cls = 'ok'; dy.lbl = 'Fermeture dans'; dy.cd = dur(sc.fm - now); }
   else { const n = nextOpen(now); dy.state = 'Terminé'; dy.cls = 'mutebg'; dy.lbl = 'Prochaine ouverture'; dy.cd = n ? (ymd(n.om) === ymd(now + 24 * HOUR) ? 'demain ' + n.o + ' h' : dateTxt(n.om)) : '—'; }
-  if (V.set && sc && sc.fm && sc.fm > V.set) dy.light = {lbl:'Éclairage pistes dès', v:hm(V.set - 15 * 60000)};
-  else if (V.set) dy.light = {lbl:'Noirceur vers', v:hm(V.set + 30 * 60000)};
+  if (V.set) dy.light = {lbl:'Coucher · noirceur', v:hm(V.set) + ' · ' + hm(V.set + 30 * 60000)};
   if (hi) {
     const tw = wetBulb(V.cur.T, V.cur.RH); dy.tw = tw; dy.snm = snowMk(tw);
     const fut = H.filter(x => x.t > now && x.t <= now + 24 * HOUR).map(x => ({t:x.t, tw:wetBulb(x.T, x.RH)}));
@@ -738,20 +721,12 @@ function build() {
 
 /* ===================== Déductions pour la journée aux Glissades ===================== */
 function plan(V, H, now) {
-  const g = V.glide, sn = V.snow || {}, c = V.cur, co = V.cold || {}, dy = V.day || {}, sc = dy.s;
+  const g = V.glide, sn = V.snow || {}, c = V.cur, dy = V.day || {}, sc = dy.s;
   const close = sc && sc.fm ? sc.fm : now + 8 * HOUR;
   const work = H.filter(x => x.T != null && x.t >= now - HOUR && x.t <= Math.max(close, now + 4 * HOUR));
-  /* Tenue recommandée (pire ressenti jusqu'à la fermeture) */
-  let wmin = co.wc != null ? co.wc : null;
-  for (const x of work) { const v = windChill(x.T, x.ws); if (wmin == null || v < wmin) wmin = v; }
-  const T = [];
-  if (wmin != null) T.push(wmin > -5 ? 'Manteau d\'hiver, tuque, gants' : wmin > -15 ? '3 couches, tuque, gants doublés' : wmin > -25 ? '3 couches, cache-cou, mitaines, bottes chaudes' :
-    wmin > -35 ? '3 couches, cagoule, mitaines, chaufferettes' : 'Peau entièrement couverte, chaufferettes, rotations courtes');
-  if (work.some(x => (x.rain || 0) >= 0.2 || FRZ.includes(x.wc))) T.push('imperméable, gants de rechange');
-  if (sn.snowing || work.some(x => (x.sn || 0) >= 0.3)) T.push('lunettes de ski');
-  if (work.some(x => (x.ws || 0) >= 30)) T.push('coupe-vent');
-  if ((co.uvmax || 0) >= 3 || work.some(x => x.day && x.cc != null && x.cc < 40)) T.push('lunettes de soleil, écran solaire');
-  V.tenue = {wmin, list:T, short:T.join(' · ')};
+  /* Heures où la peau exposée peut geler en moins de 30 min (ressenti ≤ −28) */
+  const fz = work.filter(x => x.t >= now - HOUR && Math.round(windChill(x.T, x.ws)) <= -28);
+  V.frost = fz.length ? hh(fz[0].t) + ' → ' + hh(fz[fz.length - 1].t + HOUR) : 'aucune';
   /* Achalandage prévu (type de journée + météo pendant les heures d'ouverture) */
   V.crowd = null;
   if (sc && sc.o != null) {
@@ -779,31 +754,29 @@ function plan(V, H, now) {
     V.crowd = Object.assign(s < 30 ? {n:'Faible', cls:'ok'} : s < 55 ? {n:'Modéré', cls:'yel'} : s < 78 ? {n:'Élevé', cls:'warn'} : {n:'Très élevé', cls:'bad'},
       {s, why:why + (A.length ? ' · ' + A.map(x => x[0]).join(', ') : ''), peak:'11 h – 14 h' + (sc.f >= 20 ? ' et 18 h – 20 h' : '')});
   }
-  /* Pistes et équipements : quoi faire, par priorité */
+  /* Pistes et équipements : conditions prévues, par importance */
   const P = [], add = (pr, ico, txt) => P.push({p:pr, ico, txt});
   const later = (V.glDay || []).filter(x => x.t > now);
   if (g) {
-    if (g.ice) add(1, '🧊', 'Pistes glacées : renforcer les zones de freinage, réduire les glisseurs');
-    else if (g.lv.k === 4) add(1, '⚡', 'Glisse très rapide : vérifier les fins de piste et zones de freinage');
-    else { const f = later.find(x => x.lv.k === 4 || x.ice); if (f) add(2, '⚡', 'Très rapide dès ' + hh(f.t) + ' : prévoir freinage et moins de glisseurs'); }
+    if (g.ice) add(1, '🧊', 'Pistes glacées : glisse très rapide jusqu\'en fin de piste');
+    else if (g.lv.k === 4) add(1, '⚡', 'Glisse très rapide : les embarcations vont plus loin en fin de piste');
+    else { const f = later.find(x => x.lv.k === 4 || x.ice); if (f) add(2, '⚡', 'Glisse très rapide dès ' + hh(f.t)); }
   }
-  if ((sn.rate || 0) >= 0.3) add(1, '❄️', 'Neige ' + cm(sn.rate) + '/h : dégager couloirs et sorties de tapis ' + (sn.rate >= 1.5 ? 'aux 30 min' : sn.rate >= 0.7 ? 'chaque heure' : 'aux 2 h'));
-  else if (sn.start && sn.start < close) add(2, '❄️', 'Neige dès ' + hh(sn.start) + ' : la glisse va ralentir, prévoir le dégagement des couloirs');
-  if ((sn.p6 || 0) >= 2) add(1, '🚜', 'Neige fraîche ' + cm(sn.p6) + ' : compacter les couloirs avant l\'achalandage');
-  else if ((sn.p24 || 0) >= 3) add(2, '🚜', cm(sn.p24) + ' tombés en 24 h : rafraîchir les couloirs lents');
+  if ((sn.rate || 0) >= 0.3) add(1, '❄️', 'Neige ' + cm(sn.rate) + '/h : couloirs et sorties de tapis se recouvrent' + (sn.rate >= 1 ? ' rapidement' : ''));
+  else if (sn.start && sn.start < close) add(2, '❄️', 'Neige dès ' + hh(sn.start) + ' : la glisse va ralentir');
+  if ((sn.p6 || 0) >= 2) add(1, '🚜', 'Neige fraîche ' + cm(sn.p6) + ' en 6 h : couloirs mous, glisse ralentie');
+  else if ((sn.p24 || 0) >= 3) add(2, '🚜', cm(sn.p24) + ' tombés en 24 h : couloirs plus lents');
   const gx = Math.max(c && c.wg || 0, maxK(work.filter(x => x.t <= close), 'wg') || 0);
-  if (gx >= 60) add(1, '💨', 'Rafales ' + n0(gx) + ' km/h : surveiller le télérafting, attacher tubes et objets légers');
-  if (c && (c.ws || 0) >= 35 && ((sn.p24 || 0) >= 1 || sn.snowing)) add(2, '💨', 'Neige soufflée : vérifier couloirs, bermes et quais');
-  if (sn.frzNow || sn.frzPast || sn.frzNext) add(1, '🧊', 'Verglas : vérifier la glace sur les tapis roulants et les quais');
-  if (sn.rainNow) add(2, '🌧️', 'Pluie : neige lourde, glisse lente' + (sn.refreeze ? '; regel vers ' + hh(sn.refreeze) + ' = glace' : ''));
+  if (gx >= 60) add(1, '💨', 'Rafales jusqu\'à ' + n0(gx) + ' km/h : télérafting, tubes et objets légers exposés');
+  if (c && (c.ws || 0) >= 35 && ((sn.p24 || 0) >= 1 || sn.snowing)) add(2, '💨', 'Neige soufflée : accumulations possibles dans les couloirs, bermes et quais');
+  if (sn.frzNow || sn.frzPast || sn.frzNext) add(1, '🧊', 'Verglas : glace possible sur les tapis roulants et les quais');
+  if (sn.rainNow) add(2, '🌧️', 'Pluie : neige lourde, glisse lente' + (sn.refreeze ? '; regel vers ' + hh(sn.refreeze) + ' (glace)' : ''));
   else if (sn.refreeze) add(2, '🧊', 'Regel vers ' + hh(sn.refreeze) + ' : pistes glacées en soirée et demain matin');
-  if (!sn.rainNow && work.some(x => x.t > now && x.t < close && x.T > 1 && (x.sw || 0) > 300)) add(3, '☀️', 'Neige molle en après-midi : surveiller ornières et bosses');
-  if (g && g.lv.k === 1 && !g.ice && !((sn.p6 || 0) >= 2) && !later.some(x => x.lv.k >= 3)) add(3, '🐢', 'Glisse lente : le haut de la plage de glisseurs est correct');
-  if (c && c.feel != null && c.feel <= -30) add(2, '🥶', 'Grand froid : rotations courtes aux remontées et aux départs');
-  if (dy.light && /Éclairage/.test(dy.light.lbl)) add(3, '💡', 'Allumer l\'éclairage des pistes vers ' + dy.light.v);
-  if (dy.tw != null && dy.tw <= -4) add(3, '🌨️', 'Fabrication de neige possible ' + (dy.win === '> 24 h' ? 'toute la journée' : 'maintenant (' + dy.win + ')'));
+  if (!sn.rainNow && work.some(x => x.t > now && x.t < close && x.T > 1 && (x.sw || 0) > 300)) add(3, '☀️', 'Neige molle en après-midi : ornières et bosses probables');
+  if (V.set && sc && sc.fm && sc.fm > V.set) add(3, '🌙', 'Noirceur vers ' + hm(V.set + 30 * 60000) + ', ouvert jusqu\'à ' + sc.f + ' h');
+  if (dy.tw != null && dy.tw <= -4) add(3, '🌨️', 'Conditions favorables à la fabrication de neige ' + (dy.win === '> 24 h' ? 'toute la journée' : 'maintenant (' + dy.win + ')'));
   else if (dy.win && /→|dès/.test(dy.win)) add(3, '🌨️', 'Fenêtre de fabrication de neige : ' + dy.win);
-  if (!P.length && c) add(3, '✓', 'Conditions stables : entretien régulier des couloirs');
+  if (!P.length && c) add(3, '✓', 'Conditions stables');
   P.sort((a, b) => a.p - b.p); V.pistes = P;
 }
 
@@ -839,14 +812,13 @@ function renderTiles() {
   /* Pistes et équipements (déductions) */
   const P = V.pistes || [];
   $('#t-pi').innerHTML = !P.length ? empty('Pistes · équipements', D.busy ? 'Chargement…' : 'Données indisponibles') :
-    '<h3><span>Pistes · équipements</span><span class="badge ' + (P[0].p === 1 ? 'bad">PRIORITÉ' : P[0].p === 2 ? 'warn">À SURVEILLER' : 'ok">OK') + '</span></h3><div class="tb">' +
+    '<h3><span>Pistes · équipements</span><span class="badge ' + (P[0].p === 1 ? 'bad">IMPORTANT' : P[0].p === 2 ? 'warn">À NOTER' : 'ok">OK') + '</span></h3><div class="tb">' +
     P.slice(0, 3).map(x => '<div class="it' + (x.p === 1 ? ' p1' : '') + '">' + x.ico + ' ' + esc(x.txt) + '</div>').join('') + '</div>';
   /* Vitesse de glisse par secteur (calculée avec la météo) */
   if (!g || !V.sect) $('#t-sp').innerHTML = empty('Vitesse de glisse', D.busy ? 'Chargement…' : 'Météo indisponible');
   else {
     $('#t-sp').innerHTML = '<h3><span>Vitesse de glisse</span><span class="badge k' + (g.ice ? 'ice' : g.lv.k) + '">' + (g.ice ? 'GLACÉE' : 'MÉTÉO') + '</span></h3><div class="tb">' +
-      V.sect.map(x => '<div class="r"><span>' + x.n + '</span><span class="sp k' + x.lv.k + '">' + x.lv.n + '</span></div>').join('') +
-      '<div class="r"><span>Glisseurs / emb.</span><b>' + RIDERS[g.lv.k] + '</b></div></div>';
+      V.sect.map(x => '<div class="r"><span>' + x.n + '</span><span class="sp k' + x.lv.k + '">' + x.lv.n + '</span></div>').join('') + '</div>';
   }
   /* Tendance de la glisse */
   if (!g) $('#t-gl').innerHTML = empty('Glisse · tendance');
@@ -880,8 +852,7 @@ function renderTiles() {
     $('#t-co').innerHTML = '<h3><span>Équipe · froid</span><span class="badge ' + co.risk.cls + '">' + co.risk.n + '</span></h3><div class="tb">' +
       '<div class="r"><span>Ressenti · pire</span><b>' + tf(co.wc) + (co.worst ? ' · ' + tf(co.worst.v) + ' ' + hh(co.worst.t) : '') + '</b></div>' +
       '<div class="r"><span>Gelures (peau)</span><b>' + co.risk.frost + '</b></div>' +
-      '<div class="r"><span>Pauses</span><b class="' + (co.work.r >= 0 && co.work.short !== 'Normales' ? 'c-warn' : '') + '">' + co.work.short + '</b></div>' +
-      (V.tenue && V.tenue.short ? '<div class="it">👕 ' + esc(V.tenue.short) + '</div>' : '') + '</div>';
+      '<div class="r"><span>Ressenti ≤ −28°</span><b class="' + (V.frost !== 'aucune' ? 'c-warn' : '') + '">' + V.frost + '</b></div></div>';
   }
   /* Journée */
   const dy = V.day;
@@ -968,7 +939,7 @@ function mGlide() {
   h += '<h4>Repères</h4><p style="font-size:.76rem"><span class="sp k1">Lente</span> <span class="sp k2">Modérée</span> <span class="sp k3">Rapide</span> <span class="sp k4">Très rapide</span> <span class="sp kice">Glacée</span><br>' +
     'Calcul selon la température, la neige fraîche, le regel et le verglas, la pluie, le soleil et le vent (+ = plus rapide, − = plus lent). ' +
     'Les zones plus difficiles (pentes plus raides) glissent plus vite : écart estimé de −14 (bout de chou) à +7 (expert). ' +
-    'Glisse rapide → moins de glisseurs par embarcation (bas de la plage); glisse lente → plus (haut de la plage). Les consignes du superviseur ont toujours priorité.</p>';
+    'Estimation automatique.</p>';
   openModal('Vitesse de glisse · météo', h);
 }
 function bars(H, i0, back, fwd) {
@@ -991,8 +962,8 @@ function mSnow() {
   h += '<h4>Précipitations heure par heure (24 h passées | 24 h à venir)</h4>' + bars(H, V.i0, 24, 24) +
     '<div class="bx"><span>−24 h</span><span>−12 h</span><span style="color:var(--bad)">maintenant</span><span>+12 h</span><span>+24 h</span></div>' +
     '<p class="mute" style="font-size:.66rem">Bleu = neige (cm) · vert = pluie · violet = verglas</p>';
-  h += '<h4>Actions suggérées</h4>' + sn.A.map(a => '<div class="r"><span style="color:var(--ink);white-space:normal">→ ' + esc(a) + '</span></div>').join('');
-  h += '<p class="mute" style="font-size:.66rem">*Estimation du modèle. Seuils : REQUIS si ≥ 2 cm en 6 h, neige ≥ 0,5 cm/h, verglas, regel ou poudrerie; À PRÉVOIR si neige ou verglas prévus dans les 12 h.</p>';
+  h += '<h4>Constats</h4>' + sn.A.map(a => '<div class="r"><span style="color:var(--ink);white-space:normal">→ ' + esc(a) + '</span></div>').join('');
+  h += '<p class="mute" style="font-size:.66rem">*Estimation du modèle. IMPORTANT : ≥ 2 cm en 6 h, neige ≥ 0,5 cm/h, verglas, regel ou poudrerie. À NOTER : neige ou verglas prévus dans les 12 h.</p>';
   openModal('Déneigement', h);
 }
 function mCold() {
@@ -1002,12 +973,8 @@ function mCold() {
     '<p><b>' + esc(co.risk.txt) + '</b></p>';
   h += '<h4>Refroidissement éolien (Environnement Canada)</h4><table class="tbl"><tr><th>Indice</th><th>Risque</th><th>Gelure peau exposée</th></tr>' +
     [['0 à −9', 0], ['−10 à −27', 1], ['−28 à −39', 2], ['−40 à −47', 3], ['−48 à −54', 4], ['−55 et moins', 5]].map(([l, i]) => '<tr class="' + (RISK[i] === co.risk ? 'hl' : '') + '"><td>' + l + '</td><td>' + RISK[i].n + '</td><td>' + RISK[i].frost + '</td></tr>').join('') + '</table>';
-  h += '<h4>Pauses de réchauffement (ACGIH, quart de 4 h)</h4><p>' + esc(co.work.long) + '</p>';
-  if (co.work.r >= 0) h += '<table class="tbl"><tr><th>Temp.</th>' + ACG_W.map(w => '<th>' + w + '</th>').join('') + '</tr>' +
-    ACG.map((row, i) => '<tr class="' + (i === co.work.r ? 'hl' : '') + '"><td>' + ACG_T[i] + '</td>' + row.map((v, j) => '<td style="' + (i === co.work.r && j === co.work.c ? 'color:var(--bad)' : '') + '">' + (v === 'N' ? 'norm.' : v === 'X' ? 'arrêt' : v.replace('/', ' min/')) + '</td>').join('') + '</tr>').join('') + '</table>';
-  if (V.tenue && V.tenue.list.length) h += '<h4>Tenue recommandée</h4><p>' + esc(V.tenue.list.join(' · ')) + '</p>';
-  h += '<h4>Rappels</h4><p style="font-size:.76rem">Couvrir nez, joues, oreilles et doigts · couches sèches, changer les gants mouillés · système de jumelage : vérifier les taches blanches/grises sur le visage du collègue · boire chaud, éviter caféine et alcool · frissons intenses, confusion ou somnolence = se mettre à l\'abri et aviser le superviseur.</p>' +
-    '<p class="mute" style="font-size:.66rem">UV max aujourd\'hui : ' + (co.uvmax != null ? n0(co.uvmax) + ' (' + uvTxt(co.uvmax) + ')' : '—') + ' — la neige réfléchit jusqu\'à 80 % des UV : lunettes de soleil et écran solaire.</p>';
+  h += '<div class="g2">' + R('Ressenti ≤ −28°', V.frost) + '</div>';
+  h += '<p class="mute" style="font-size:.66rem">UV max aujourd\'hui : ' + (co.uvmax != null ? n0(co.uvmax) + ' (' + uvTxt(co.uvmax) + ')' : '—') + ' — la neige réfléchit jusqu\'à 80 % des UV.</p>';
   openModal('Froid · sécurité', h);
 }
 function mDay() {
@@ -1039,10 +1006,9 @@ function mHours() {
 }
 function mPistes() {
   const V = VM, P = V.pistes || [];
-  let h = '<h4>À faire sur les pistes et les équipements</h4>' + (P.length ? P.map(x => '<div class="r"><span style="color:var(--ink);white-space:normal">' + x.ico + ' ' + esc(x.txt) + '</span><b class="' +
-    (x.p === 1 ? 'c-bad">priorité' : x.p === 2 ? 'c-warn">surveiller' : 'mute">info') + '</b></div>').join('') : '<p>Données indisponibles.</p>');
-  if (V.tenue && V.tenue.list.length) h += '<h4>Tenue recommandée (pire ressenti ' + tf(V.tenue.wmin) + ')</h4>' + V.tenue.list.map(t => '<div class="r"><span style="color:var(--ink);white-space:normal">👕 ' + esc(t) + '</span></div>').join('');
-  h += '<p class="mute" style="font-size:.66rem">Déductions automatiques à partir de la glisse estimée, de la neige, du vent, du regel et de l\'horaire du jour. Les consignes du superviseur ont priorité.</p>';
+  let h = '<h4>Conditions prévues sur les pistes et les équipements</h4>' + (P.length ? P.map(x => '<div class="r"><span style="color:var(--ink);white-space:normal">' + x.ico + ' ' + esc(x.txt) + '</span><b class="' +
+    (x.p === 1 ? 'c-bad">important' : x.p === 2 ? 'c-warn">à noter' : 'mute">info') + '</b></div>').join('') : '<p>Données indisponibles.</p>');
+  h += '<p class="mute" style="font-size:.66rem">Déductions automatiques à partir de la glisse estimée, de la neige, du vent, du regel et de l\'horaire du jour.</p>';
   openModal('Pistes · équipements', h);
 }
 function mAlerts() {
@@ -1055,16 +1021,13 @@ function mAlerts() {
 }
 function mZone(id) {
   const z = VM.zones.find(x => x.id === id); if (!z) return;
-  const l = z.live || {}, m = (z.gl || '').match(/(\d+)\D+(\d+)/), lv = z.est ? z.est.k : null;
-  let rep = '';
-  if (m && typeof lv === 'number' && lv > 0) { const a = +m[1], b = +m[2], mid = Math.round((a + b) / 2); rep = lv >= 4 ? a + ' à ' + Math.min(b, a + 1) : lv === 3 ? a + ' à ' + mid : lv === 2 ? mid + ' à ' + b : b + ' (max)'; }
+  const l = z.live || {};
   const log = LS.get('gpdh.log', []).filter(e => e.z === id).slice(0, 4);
   let h = '<div class="g2">' + R('Vitesse (météo)', z.est ? '<span class="sp k' + z.est.k + '">' + z.est.n + '</span> ' + z.es : '—') + R('Dans 3 h', z.est3 ? '<span class="sp k' + z.est3.k + '">' + z.est3.n + '</span>' : '—') +
     R('État (site)', esc(l.etat ? cap(l.etat) : '—')) + R('Pistes ouvertes', l.fr ? l.fr.o + '/' + l.fr.t : '—/' + z.p) + R('Soirée', esc(l.soir ? cap(l.soir) : z.soir ? 'Disponible' : 'Non disponible')) +
     R('Niveau', esc(l.niv || z.niv)) + R('Versant', esc(z.v)) + R('Remontée', esc(l.rem || z.rem)) + R('Glisseurs', esc(l.gl || z.gl)) +
     R('Grandeur min.', esc(l.taille || z.taille || 'aucune')) + R('Casque', esc(l.casque || z.casque || 'Fortement recommandé')) + '</div>';
   if (z.note) h += '<p class="mute">' + esc(z.note) + '</p>';
-  if (rep) h += '<p><b>Repère :</b> glisse ' + z.est.n.toLowerCase() + ' → environ ' + rep + ' glisseurs par embarcation (plage officielle ' + esc(z.gl) + '). Suivre les consignes du superviseur.</p>';
   if (log.length) h += '<h4>Mesures chrono récentes</h4>' + log.map(e => R(hm(e.t), (e.kmh ? n0(e.kmh) + ' km/h' : '') + (e.s ? ' · ' + e.s.toFixed(1).replace('.', ',') + ' s' : ''))).join('');
   h += '<button class="btn pri" data-act="chrono" data-id="' + z.id + '">⏱ Chronométrer cette zone</button>';
   openModal('Zone ' + z.nom.replace('Parc du ', ''), h);
@@ -1077,7 +1040,7 @@ function chronoView() {
   const s = CH.el / 1000, k0 = d && s > 0 ? (d / s) * 3.6 : null, kmh = k0 && k0 <= 150 ? k0 : null;
   return '<div class="sl" style="grid-template-columns:5rem 1fr"><span>Zone</span><select id="chZ" class="inp">' + ZONES.map(x => '<option value="' + x.id + '"' + (x.id === z ? ' selected' : '') + '>' + esc(x.nom) + '</option>').join('') + '</select></div>' +
     '<div class="sl" style="grid-template-columns:5rem 1fr"><span>Distance (m)</span><input id="chD" class="inp" type="number" inputmode="decimal" placeholder="longueur mesurée" value="' + esc(d) + '"></div>' +
-    '<div class="chrono" id="chT">' + s.toFixed(2).replace('.', ',') + ' s</div><div style="text-align:center;font-weight:850;font-size:1.2rem" id="chK">' + (kmh ? n0(kmh) + ' km/h' : k0 ? '<span class="c-bad">Vérifier distance / temps</span>' : '— km/h') + '</div>' +
+    '<div class="chrono" id="chT">' + s.toFixed(2).replace('.', ',') + ' s</div><div style="text-align:center;font-weight:850;font-size:1.2rem" id="chK">' + (kmh ? n0(kmh) + ' km/h' : k0 ? '<span class="c-bad">Valeur improbable (distance ou temps)</span>' : '— km/h') + '</div>' +
     '<button class="bigbtn' + (CH.run ? ' stop' : '') + '" data-act="chGo">' + (CH.run ? 'ARRIVÉE ■' : 'DÉPART ▶') + '</button>' +
     '<div class="bg"><button class="btn" data-act="chReset">Réinitialiser</button><button class="btn pri" data-act="chSave">Enregistrer</button>' +
     '<input id="chR" class="inp" style="flex:1;width:auto" type="number" inputmode="decimal" placeholder="ou vitesse radar km/h"></div>' +
@@ -1162,7 +1125,7 @@ function mSettings() {
     '<a class="lnk" href="https://meteo.gc.ca/fr/location/index.html?coords=45.885,-74.123" target="_blank" rel="noopener">Météo Canada ↗</a> · <a class="lnk" href="https://www.quebec511.info/" target="_blank" rel="noopener">Québec 511 ↗</a></p>' +
     '<h4>Données</h4><div class="bg"><button class="btn" data-act="clearCache">Vider le cache</button><button class="btn" data-act="chClear">Effacer journal chrono</button></div>' +
     '<h4>Développeur</h4><div class="bg"><button class="btn dng" data-act="dev">DEV</button></div>' +
-    '<p class="mute" style="font-size:.66rem">Version ' + CFG.version + ' · Sources : site du Domaine des Pays d\'en Haut, Open-Meteo, Environnement et Changement climatique Canada. Outil indicatif : les consignes du superviseur ont priorité.</p>';
+    '<p class="mute" style="font-size:.66rem">Version ' + CFG.version + ' · Sources : site du Domaine des Pays d\'en Haut, Open-Meteo, Environnement et Changement climatique Canada. Outil indicatif.</p>';
   openModal('Réglages', h);
 }
 function mDevCode() {
