@@ -24,8 +24,8 @@
   --title:"Bungee",Impact,"Arial Black",sans-serif;
   --ui:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
 }
-html{background:var(--night);overflow-x:hidden}
-body{min-height:100vh;min-height:100svh;color:#fff;font-family:var(--title);overflow-x:hidden;
+html{background:var(--night);overflow:hidden;overscroll-behavior:none}
+body{height:100vh;height:100svh;color:#fff;font-family:var(--title);overflow:hidden;overscroll-behavior:none;
   -webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;touch-action:manipulation}
 input{-webkit-user-select:text;user-select:text}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
@@ -64,12 +64,12 @@ input{-webkit-user-select:text;user-select:text}
 @keyframes scroll{to{transform:translateX(-50%)}}
 
 /* ---------- Scène ---------- */
-main{position:relative;z-index:2;min-height:100vh;min-height:100svh;display:grid;grid-template-columns:1fr 1fr;
-  align-items:center;gap:2vw;padding:72px 3vw 84px;overflow-x:clip}
+main{position:relative;z-index:2;height:100vh;height:100svh;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:minmax(0,1fr);
+  gap:2vw;padding:64px 3vw 80px;overflow:clip}
 main.shake{animation:shake .5s cubic-bezier(.36,.07,.19,.97) both}
 @keyframes shake{10%,90%{transform:translate(-2px,1px) rotate(-.5deg)}20%,80%{transform:translate(4px,-2px) rotate(.5deg)}
   30%,50%,70%{transform:translate(-8px,3px) rotate(-1deg)}40%,60%{transform:translate(8px,-3px) rotate(1deg)}}
-.card{position:relative;isolation:isolate;display:flex;flex-direction:column;align-items:center;text-align:center;cursor:pointer;transition:transform .3s}
+.card{position:relative;isolation:isolate;container-type:size;min-width:0;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;transition:transform .3s}
 .card::before{content:"";position:absolute;left:50%;top:50%;width:150%;aspect-ratio:1;translate:-50% -50%;z-index:-1;border-radius:50%;
   background:repeating-conic-gradient(var(--ray) 0 9deg,transparent 9deg 18deg);
   -webkit-mask-image:radial-gradient(closest-side,#000 25%,transparent);mask-image:radial-gradient(closest-side,#000 25%,transparent);
@@ -84,7 +84,7 @@ main.shake{animation:shake .5s cubic-bezier(.36,.07,.19,.97) both}
 .card.boost{animation:boost .9s cubic-bezier(.3,1.8,.5,1)}
 @keyframes boost{30%{transform:scale(1.15) rotate(-3deg)}60%{transform:scale(.95) rotate(2deg)}}
 
-.name{font-family:var(--title);font-weight:400;font-size:clamp(2.4rem,6.6vw,6.4rem);line-height:1.05;white-space:nowrap;animation:hue 5s linear infinite}
+.name{font-family:var(--title);font-weight:400;font-size:min(14cqw,15cqh);line-height:1.05;white-space:nowrap;animation:hue 5s linear infinite}
 .name .l{display:inline-block;color:hsl(calc(var(--i) * 48deg) 100% 62%);-webkit-text-stroke:.025em #000;
   text-shadow:0 .04em 0 #000,.02em .07em 0 #000,.04em .1em 0 #000,0 0 .4em hsl(calc(var(--i) * 48deg) 100% 60% / .8);
   animation:wave 1.4s ease-in-out infinite;animation-delay:calc(var(--i) * -.12s)}
@@ -94,7 +94,7 @@ main.shake{animation:shake .5s cubic-bezier(.36,.07,.19,.97) both}
 @keyframes flip{to{transform:rotateY(360deg)}}
 @keyframes colon{50%{transform:scaleY(1.3) translateY(-.05em)}}
 
-.insult{position:relative;z-index:2;font-size:clamp(2rem,5.2vw,5rem);line-height:1.05;margin-top:-.1em}
+.insult{position:relative;z-index:2;font-size:min(9.5cqw,12cqh);line-height:1.05;margin-top:-.1em;white-space:nowrap}
 .insult .w{display:inline-block;white-space:nowrap}
 .insult .l{display:inline-block;animation:jelly 1.8s ease-in-out infinite;animation-delay:calc(var(--i) * -.09s)}
 .mathieu .insult{font-family:"Rubik Wet Paint",Impact,sans-serif;color:var(--pee)}
@@ -103,12 +103,12 @@ main.shake{animation:shake .5s cubic-bezier(.36,.07,.19,.97) both}
 .oce .insult .l{-webkit-text-stroke:.02em #0b3d0b;text-shadow:0 .05em 0 #0d5e1c,0 .1em 0 #073010,0 0 .4em rgba(255,140,0,.8)}
 @keyframes jelly{0%,100%{transform:scale(1,1)}25%{transform:scale(1.15,.85) translateY(.05em)}50%{transform:scale(.9,1.12) translateY(-.08em)}75%{transform:scale(1.05,.95)}}
 
-.art-wrap{position:relative;width:min(34vh,30vw,330px);aspect-ratio:1/1;margin:.25em auto 0}
+.art-wrap{position:relative;width:min(62cqw,50cqh);aspect-ratio:1/1;margin:2cqh auto 0;flex:none}
 .art{position:relative;z-index:1;display:block;width:100%;height:100%;overflow:visible}
 .orbit{position:absolute;inset:-16%;animation:spin 10s linear infinite;pointer-events:none}
 .oce .orbit{animation-direction:reverse}
 .orbit i{position:absolute;inset:0;rotate:calc(var(--k) * 90deg);font-style:normal}
-.orbit b{position:absolute;left:50%;top:0;translate:-50% -50%;display:block;font-weight:400;font-size:clamp(1.3rem,2.8vw,2.3rem);animation:spin 3s linear infinite reverse}
+.orbit b{position:absolute;left:50%;top:0;translate:-50% -50%;display:block;font-weight:400;font-size:min(7cqw,7cqh);animation:spin 3s linear infinite reverse}
 
 /* Sac de pisse */
 .swing{transform-origin:120px 2px;animation:swing 2.6s ease-in-out infinite}
@@ -235,10 +235,9 @@ body[data-chaos="3"] .track{animation-duration:20s}
 @media (prefers-reduced-motion:reduce){.beam,.floor{animation:none}main.shake{animation:none}}
 
 @media (max-width:760px){
-  main{grid-template-columns:1fr;gap:3vh;padding:56px 16px 76px}
-  .name{font-size:12vw}
-  .art-wrap{width:min(54vw,30vh);width:min(54vw,30svh)}
-  .insult{font-size:10.5vw}
+  main{grid-template-columns:1fr;grid-template-rows:repeat(2,minmax(0,1fr));gap:1vh;padding:46px 12px calc(98px + env(safe-area-inset-bottom))}
+  .fab{width:48px;height:48px;font-size:22px;bottom:calc(50px + env(safe-area-inset-bottom))}
+  #panel{bottom:calc(108px + env(safe-area-inset-bottom))}
   .beam{width:70vmax}
 }
 </style>
@@ -396,7 +395,33 @@ const pick=a=>a[Math.random()*a.length|0];
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const LINES={m:'Mathieu : sac de pisse !',o:'Océ : tête de courge !'};
+/* Voix gossantes : [hauteur, vitesse] */
+const V={chip:[2,1.6],giant:[.1,.65],slow:[.5,.35],fast:[1.6,2.2],derp:[1.4,.8]};
+const SCRIPTS={
+  m:[
+    [['Mathieu','chip'],['sac de pisse !','giant']],
+    [['Ma ma ma ma Mathieu !','fast'],['Sac de pi pi pi pisse !','chip']],
+    [['Mathieu','slow'],['sac de pisse !','fast'],['hihihihi','chip']],
+    [['Hé Mathieu ! Hé ! Hé ! Hé, Mathieu !','chip'],['Sac de pisse !','giant']],
+    [['Sac. De. Pisse.','giant'],['Sac. De. Pisse.','chip'],['Sac de pisse sac de pisse sac de pisse !','fast']],
+    [['Nananère !','chip'],['Mathieu, sac de pisse !','derp'],['Nananère !','giant']],
+  ],
+  o:[
+    [['Océ','chip'],['tête de courge !','giant']],
+    [['O O O Océ !','fast'],['Tête de cou cou cou courge !','chip']],
+    [['Océ','slow'],['tête de courge !','fast'],['hihihihi','chip']],
+    [['Hé Océ ! Hé ! Hé ! Hé, Océ !','chip'],['Tête de courge !','giant']],
+    [['Tête. De. Courge.','giant'],['Tête. De. Courge.','chip'],['Tête de courge tête de courge tête de courge !','fast']],
+    [['Nananère !','chip'],['Océ, tête de courge !','derp'],['Nananère !','giant']],
+  ],
+};
+const TAUNTS=[
+  [['Allôôô ?','chip'],["Y a quelqu'un ?",'giant'],['Mathieu, sac de pisse ! Océ, tête de courge !','fast']],
+  [['Hé ! Hé ! Hé !','chip'],["Touche l'écran !",'giant'],['hihihihi','chip']],
+  [['Psst','slow'],['Mathieu...','giant'],['sac de pisse','chip']],
+  [['Psst','slow'],['Océ...','giant'],['tête de courge','chip']],
+];
+const GIGGLES=[[['hihihi','chip']],[['nananère','chip']],[['hé hé hé','giant']],[['ouh','derp']],[['boup','chip']]];
 const POPS={m:['SAC DE PISSE !','💦 SAC DE PISSE 💦','MATHIEU : SAC DE PISSE'],o:['TÊTE DE COURGE !','🎃 TÊTE DE COURGE 🎃','OCÉ : TÊTE DE COURGE']};
 const EMO={m:['💦','💛','🧻','🚽','💧'],o:['🎃','🥒','🍂','🧡','🍁'],x:['✨','🎉','👑','⭐','🌟']};
 const CHAOS=['😌 Zen','🙂 Normal','🤪 Fou','☢️ Apocalypse'];
@@ -558,6 +583,17 @@ const SFX={
   bonk(){if(!canPlay())return;const t=AC.currentTime+.01;tone(260,t,.35,{type:'sine',vol:.45,to:110});
     tone(520,t,.12,{type:'triangle',vol:.15,to:300});hiss(t,.05,{vol:.2,f:800});},
 };
+function kazoo(f,t,dur){
+  const o=AC.createOscillator(),lfo=AC.createOscillator(),lg=AC.createGain(),bp=AC.createBiquadFilter(),g=AC.createGain();
+  o.type='sawtooth';o.frequency.setValueAtTime(f*.94,t);o.frequency.exponentialRampToValueAtTime(f,t+.05);
+  lfo.frequency.value=7;lg.gain.value=f*.025;lfo.connect(lg);lg.connect(o.frequency);
+  bp.type='bandpass';bp.frequency.value=1400;bp.Q.value=1.5;
+  g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.35,t+.02);g.gain.setValueAtTime(.35,t+dur-.04);g.gain.linearRampToValueAtTime(.0001,t+dur);
+  o.connect(bp);bp.connect(g);g.connect(out);o.start(t);lfo.start(t);o.stop(t+dur+.05);lfo.stop(t+dur+.05);
+  hiss(t,dur,{vol:.06,f:2500,q:3});
+}
+SFX.nana=()=>{if(!canPlay())return;let t=AC.currentTime+.03;
+  [[392,.3],[330,.3],[440,.17],[392,.17],[330,.5]].forEach(([f,d])=>{kazoo(f,t,d);t+=d+.04;});};
 const sfx=k=>(k==='m'?SFX.splash:SFX.bonk)();
 
 /* ---------- Voix ---------- */
@@ -569,6 +605,14 @@ function say(text,{pitch=.9,rate=.95,onstart,onend}={}){
   if(!synth||!S.voice)return false;
   const u=new SpeechSynthesisUtterance(text);u.lang=voice?voice.lang:'fr-FR';if(voice)u.voice=voice;
   u.pitch=pitch;u.rate=rate;u.onstart=onstart||null;u.onend=onend||null;u.onerror=onend||null;synth.speak(u);return true;
+}
+function sayScript(script,{onstart,onend}={}){
+  if(!synth||!S.voice)return false;
+  script.forEach(([text,style],i)=>{
+    let[pitch,rate]=V[style];if(god){pitch=rand(0,2);rate=rand(.5,2.5);}
+    say(text,{pitch,rate,onstart:i===0?onstart:null,onend:i===script.length-1?onend:null});
+  });
+  return true;
 }
 function unlock(){
   if(unlocked)return;unlocked=true;ac();
@@ -599,14 +643,17 @@ function proclaim(){
   unlock();SFX.fanfare();
   if(synth&&S.voice){
     synth.cancel();
-    setTimeout(()=>['m','o'].forEach(k=>say(LINES[k],{pitch:.7,rate:.9,onstart:()=>spot(k,true),onend:()=>spot(k,false)})),750);
+    setTimeout(()=>{
+      sayScript(pick(SCRIPTS.m),{onstart:()=>spot('m',true),onend:()=>spot('m',false)});
+      sayScript(pick(SCRIPTS.o),{onstart:()=>spot('o',true),onend:()=>{spot('o',false);SFX.nana();}});
+    },750);
   }else{
     ['m','o'].forEach((k,i)=>{setTimeout(()=>spot(k,true),400+i*1500);setTimeout(()=>spot(k,false),1600+i*1500);});
   }
 }
 function speakOne(k){
   if(!synth||!S.voice)return;synth.cancel();const c=cards[k];
-  setTimeout(()=>say(LINES[k],{pitch:rand(.6,1.4),rate:rand(.85,1.1),onstart:()=>c.classList.add('speaking'),onend:()=>c.classList.remove('speaking')}),60);
+  setTimeout(()=>sayScript(pick(SCRIPTS[k]),{onstart:()=>c.classList.add('speaking'),onend:()=>c.classList.remove('speaking')}),60);
 }
 function mega(){
   SFX.airhorn();SFX.fanfare();flash();shake();spinLetters();jiggle();cannon(-1);cannon(1);
@@ -623,7 +670,8 @@ document.addEventListener('click',e=>{
   const card=e.target.closest('.card');
   const k=card?card.dataset.k:((alt^=1)?'m':'o');
   burst(e.clientX,e.clientY,k);popText(k,e.clientX,e.clientY-30);sfx(k);jiggle(k);
-  if(card){boostCard(card);speakOne(k);}
+  if(card){boostCard(card);speakOne(k);if(Math.random()<.25)SFX.nana();}
+  else if(synth&&S.voice&&!synth.speaking&&Math.random()<.35)sayScript(pick(GIGGLES));
   if(S.chaos>=2&&Math.random()<.25)shake();
 });
 $('#speak').addEventListener('click',proclaim);
@@ -694,6 +742,18 @@ setInterval(()=>{
   ti^=1;const[e,t]=TT[ti];document.title=`${e} ${t}`;
   favicon.href='data:image/svg+xml,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">${e}</text></svg>`);
 },2200);
+
+/* ---------- Ça gosse quand tu ne fais rien ---------- */
+let lastAct=performance.now();
+['click','pointermove','keydown'].forEach(ev=>addEventListener(ev,()=>{lastAct=performance.now();},{passive:true}));
+setInterval(()=>{
+  if(!opened||!unlocked||!synth||!S.voice||!S.chaos||document.hidden||synth.speaking)return;
+  if(performance.now()-lastAct>18000){lastAct=performance.now();sayScript(pick(TAUNTS));SFX.nana();jiggle();}
+},3000);
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden||!unlocked||!synth||!S.voice||!S.chaos)return;
+  synth.cancel();sayScript([['Te revoilà !','chip'],['Océ, tête de courge !','giant'],['Mathieu, sac de pisse !','fast']]);
+});
 
 syncUI();
 requestAnimationFrame(frame);
