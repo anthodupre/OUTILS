@@ -70,7 +70,7 @@ main.shake{animation:shake .5s cubic-bezier(.36,.07,.19,.97) both}
 @keyframes shake{10%,90%{transform:translate(-2px,1px) rotate(-.5deg)}20%,80%{transform:translate(4px,-2px) rotate(.5deg)}
   30%,50%,70%{transform:translate(-8px,3px) rotate(-1deg)}40%,60%{transform:translate(8px,-3px) rotate(1deg)}}
 .card{position:relative;isolation:isolate;container-type:size;min-width:0;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;transition:transform .3s}
-.card::before{content:"";position:absolute;left:50%;top:50%;width:150%;aspect-ratio:1;translate:-50% -50%;z-index:-1;border-radius:50%;
+.card::before{content:"";pointer-events:none;position:absolute;left:50%;top:50%;width:150%;aspect-ratio:1;translate:-50% -50%;z-index:-1;border-radius:50%;
   background:repeating-conic-gradient(var(--ray) 0 9deg,transparent 9deg 18deg);
   -webkit-mask-image:radial-gradient(closest-side,#000 25%,transparent);mask-image:radial-gradient(closest-side,#000 25%,transparent);
   animation:spin 40s linear infinite;opacity:.5;transition:opacity .3s}
@@ -85,7 +85,7 @@ main.shake{animation:shake .5s cubic-bezier(.36,.07,.19,.97) both}
 .card.boost{animation:boost .9s cubic-bezier(.3,1.8,.5,1)}
 @keyframes boost{30%{transform:scale(1.15) rotate(-3deg)}60%{transform:scale(.95) rotate(2deg)}}
 
-.name{font-family:var(--title);font-weight:400;font-size:6.5vmin;font-size:min(14cqw,15cqh);line-height:1.05;white-space:nowrap;animation:hue 5s linear infinite}
+.name{font-family:var(--title);font-weight:400;font-size:6.5vmin;font-size:min(13cqw,13.5cqh);line-height:1.05;white-space:nowrap;animation:hue 5s linear infinite}
 .name .l{display:inline-block;color:hsl(calc(var(--i) * 48deg) 100% 62%);-webkit-text-stroke:.025em #000;
   text-shadow:0 .04em 0 #000,.02em .07em 0 #000,.04em .1em 0 #000,0 0 .4em hsl(calc(var(--i) * 48deg) 100% 60% / .8);
   animation:wave 1.4s ease-in-out infinite;animation-delay:calc(var(--i) * -.12s)}
@@ -95,7 +95,7 @@ main.shake{animation:shake .5s cubic-bezier(.36,.07,.19,.97) both}
 @keyframes flip{to{transform:rotateY(360deg)}}
 @keyframes colon{50%{transform:scaleY(1.3) translateY(-.05em)}}
 
-.insult{position:relative;z-index:2;font-size:4.5vmin;font-size:min(9.5cqw,12cqh);line-height:1.05;margin-top:-.1em;white-space:nowrap}
+.insult{position:relative;z-index:2;font-size:4.5vmin;font-size:min(9cqw,11cqh);line-height:1.05;margin-top:-.1em;white-space:nowrap}
 .insult .w{display:inline-block;white-space:nowrap}
 .insult .l{display:inline-block;animation:jelly 1.8s ease-in-out infinite;animation-delay:calc(var(--i) * -.09s)}
 .mathieu .insult{font-family:"Rubik Wet Paint",Impact,sans-serif;color:var(--pee)}
@@ -104,8 +104,8 @@ main.shake{animation:shake .5s cubic-bezier(.36,.07,.19,.97) both}
 .oce .insult .l{-webkit-text-stroke:.02em #0b3d0b;text-shadow:0 .05em 0 #0d5e1c,0 .1em 0 #073010,0 0 .4em rgba(255,140,0,.8)}
 @keyframes jelly{0%,100%{transform:scale(1,1)}25%{transform:scale(1.15,.85) translateY(.05em)}50%{transform:scale(.9,1.12) translateY(-.08em)}75%{transform:scale(1.05,.95)}}
 
-.art-wrap{position:relative;width:24vmin;width:min(76cqw,50cqh);aspect-ratio:1/1;margin:2cqh auto 0;flex:none}
-.art{position:relative;z-index:1;display:block;width:100%;height:100%;overflow:visible}
+.art-wrap{position:relative;width:24vmin;width:min(70cqw,45cqh);aspect-ratio:1/1;margin:2cqh auto 0;flex:none}
+.art{position:relative;z-index:1;pointer-events:none;display:block;width:100%;height:100%;overflow:visible}
 .orbit{position:absolute;inset:-16%;animation:spin 10s linear infinite;pointer-events:none}
 .oce .orbit{animation-direction:reverse}
 .orbit i{position:absolute;inset:0;rotate:calc(var(--k) * 90deg);font-style:normal}
@@ -136,7 +136,7 @@ main.shake{animation:shake .5s cubic-bezier(.36,.07,.19,.97) both}
 @keyframes prop{50%{transform:scaleX(-1)}}
 
 /* High cortisol male */
-.luciano .insult{font-family:"Rubik Glitch",Impact,sans-serif;color:#ff3b3b;font-size:3.6vmin;font-size:min(7.4cqw,11cqh)}
+.luciano .insult{font-family:"Rubik Glitch",Impact,sans-serif;color:#ff3b3b;font-size:3.6vmin;font-size:min(7cqw,10cqh)}
 .luciano .insult .l{-webkit-text-stroke:.02em #2b0000;text-shadow:0 .05em 0 #7a0000,0 .1em 0 #2b0000,0 0 .4em rgba(255,40,40,.85);
   animation:nerves .3s steps(1) infinite;animation-delay:calc(var(--i) * -.07s)}
 .card.luciano.speaking .insult .l{animation-duration:.15s}
