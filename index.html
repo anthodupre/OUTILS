@@ -7,14 +7,14 @@
 <meta name="description" content="Mathieu : sac de pisse. Océ : tête de courge.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Mathieu : sac de pisse 💦">
-<meta property="og:description" content="Océ : tête de courge 🎃">
+<meta property="og:description" content="Océ : tête de courge 🎃 · Luciano : high cortisol male 😤">
 <meta name="theme-color" content="#14001f">
 <!-- Empêche Google d'associer le site au nom de Mathieu. Retire cette ligne si tu veux qu'il soit indexé. -->
 <meta name="robots" content="noindex">
 <link id="favicon" rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%83%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Creepster&family=Rubik+Wet+Paint&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Creepster&family=Rubik+Glitch&family=Rubik+Wet+Paint&display=swap">
 <script>document.documentElement.classList.add('js')</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -64,8 +64,8 @@ input{-webkit-user-select:text;user-select:text}
 @keyframes scroll{to{transform:translateX(-50%)}}
 
 /* ---------- Scène ---------- */
-main{position:relative;z-index:2;height:100vh;height:100svh;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:minmax(0,1fr);
-  gap:2vw;padding:64px 3vw 80px;overflow:clip}
+main{position:relative;z-index:2;height:100vh;height:100svh;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:minmax(0,1fr);
+  gap:1.5vw;padding:64px 2vw 80px;overflow:clip}
 main.shake{animation:shake .5s cubic-bezier(.36,.07,.19,.97) both}
 @keyframes shake{10%,90%{transform:translate(-2px,1px) rotate(-.5deg)}20%,80%{transform:translate(4px,-2px) rotate(.5deg)}
   30%,50%,70%{transform:translate(-8px,3px) rotate(-1deg)}40%,60%{transform:translate(8px,-3px) rotate(1deg)}}
@@ -76,6 +76,7 @@ main.shake{animation:shake .5s cubic-bezier(.36,.07,.19,.97) both}
   animation:spin 40s linear infinite;opacity:.5;transition:opacity .3s}
 .mathieu{--ray:rgba(255,230,0,.55)}
 .oce{--ray:rgba(255,138,0,.55)}
+.luciano{--ray:rgba(255,59,59,.55)}
 .oce::before{animation-direction:reverse}
 @media (hover:hover){.card:hover{transform:scale(1.03)}}
 .card.speaking{transform:scale(1.08)}
@@ -103,7 +104,7 @@ main.shake{animation:shake .5s cubic-bezier(.36,.07,.19,.97) both}
 .oce .insult .l{-webkit-text-stroke:.02em #0b3d0b;text-shadow:0 .05em 0 #0d5e1c,0 .1em 0 #073010,0 0 .4em rgba(255,140,0,.8)}
 @keyframes jelly{0%,100%{transform:scale(1,1)}25%{transform:scale(1.15,.85) translateY(.05em)}50%{transform:scale(.9,1.12) translateY(-.08em)}75%{transform:scale(1.05,.95)}}
 
-.art-wrap{position:relative;width:min(62cqw,50cqh);aspect-ratio:1/1;margin:2cqh auto 0;flex:none}
+.art-wrap{position:relative;width:min(76cqw,50cqh);aspect-ratio:1/1;margin:2cqh auto 0;flex:none}
 .art{position:relative;z-index:1;display:block;width:100%;height:100%;overflow:visible}
 .orbit{position:absolute;inset:-16%;animation:spin 10s linear infinite;pointer-events:none}
 .oce .orbit{animation-direction:reverse}
@@ -133,6 +134,30 @@ main.shake{animation:shake .5s cubic-bezier(.36,.07,.19,.97) both}
   45%{transform:translateY(-34px) scale(1,1)}75%{transform:translateY(-6px) scale(.97,1.04)}}
 @keyframes shadow{0%,100%{transform:scale(1.1);opacity:.5}45%{transform:scale(.7);opacity:.25}}
 @keyframes prop{50%{transform:scaleX(-1)}}
+
+/* High cortisol male */
+.luciano .insult{font-family:"Rubik Glitch",Impact,sans-serif;color:#ff3b3b;font-size:min(7.4cqw,11cqh)}
+.luciano .insult .l{-webkit-text-stroke:.02em #2b0000;text-shadow:0 .05em 0 #7a0000,0 .1em 0 #2b0000,0 0 .4em rgba(255,40,40,.85);
+  animation:nerves .3s steps(1) infinite;animation-delay:calc(var(--i) * -.07s)}
+.card.luciano.speaking .insult .l{animation-duration:.15s}
+.jitter{transform-origin:120px 132px;animation:jitter .35s steps(1) infinite}
+.flush{opacity:0;animation:flush 1.6s ease-in-out infinite}
+.vein{transform-box:fill-box;transform-origin:center;animation:vein .5s ease-in-out infinite}
+.jaw{transform-box:fill-box;transform-origin:center;animation:clench .25s steps(2) infinite}
+.lid{transform-box:fill-box;transform-origin:50% 0;transform:scaleY(0);animation:twitch 2.2s linear infinite}
+.sweat{transform-box:fill-box;transform-origin:50% 0;animation:sweat 1.8s ease-in infinite;animation-delay:var(--d)}
+.steam circle{fill:rgba(255,255,255,.85);transform-box:fill-box;transform-origin:center;animation:steam 1.4s ease-out infinite}
+.steam circle:nth-child(2){animation-delay:-.45s}
+.steam circle:nth-child(3){animation-delay:-.9s}
+@keyframes nerves{0%,100%{transform:translate(0,0)}25%{transform:translate(-.04em,.03em) skewX(-6deg)}50%{transform:translate(.03em,-.04em)}75%{transform:translate(.04em,.02em) skewX(6deg)}}
+@keyframes jitter{0%{transform:translate(0,0)}20%{transform:translate(-2px,1px) rotate(-1deg)}40%{transform:translate(2px,-1px)}60%{transform:translate(-1px,-2px) rotate(1deg)}80%{transform:translate(1px,2px)}}
+@keyframes flush{50%{opacity:.35}}
+@keyframes vein{50%{transform:scale(1.3)}}
+@keyframes clench{50%{transform:scale(1.04,.9)}}
+@keyframes twitch{0%,86%,100%{transform:scaleY(0)}88%{transform:scaleY(.9)}90%{transform:scaleY(.2)}92%{transform:scaleY(.85)}95%{transform:scaleY(0)}}
+@keyframes sweat{0%{transform:translateY(0) scale(.3);opacity:0}20%{transform:translateY(0) scale(1);opacity:1}100%{transform:translateY(40px) scale(.8,1.2);opacity:0}}
+@keyframes steam{0%{transform:translate(0,0) scale(.4);opacity:.9}100%{transform:translate(var(--sx),-40px) scale(1.8);opacity:0}}
+body.god .jitter{animation-duration:.12s}
 
 /* ---------- Effets ---------- */
 #fx{position:fixed;inset:0;width:100%;height:100%;z-index:5;pointer-events:none}
@@ -234,10 +259,15 @@ body[data-chaos="3"] .track{animation-duration:20s}
 
 @media (prefers-reduced-motion:reduce){.beam,.floor{animation:none}main.shake{animation:none}}
 
-@media (max-width:760px){
-  main{grid-template-columns:1fr;grid-template-rows:repeat(2,minmax(0,1fr));gap:1vh;padding:46px 12px calc(98px + env(safe-area-inset-bottom))}
-  .fab{width:48px;height:48px;font-size:22px;bottom:calc(50px + env(safe-area-inset-bottom))}
-  #panel{bottom:calc(108px + env(safe-area-inset-bottom))}
+@media (orientation:portrait){
+  main{grid-template-columns:minmax(0,1fr);grid-template-rows:repeat(3,minmax(0,1fr));gap:.5vh}
+}
+@media (max-width:760px),(max-height:500px){
+  main{padding:44px 10px calc(50px + env(safe-area-inset-bottom))}
+  .fab{width:40px;height:40px;font-size:18px;bottom:calc(4px + env(safe-area-inset-bottom));box-shadow:0 3px 0 #000,0 0 14px rgba(255,255,255,.4)}
+  #speak{left:8px}
+  #gear{right:8px}
+  #panel{bottom:calc(56px + env(safe-area-inset-bottom))}
   .beam{width:70vmax}
 }
 </style>
@@ -248,9 +278,9 @@ body[data-chaos="3"] .track{animation-duration:20s}
 <div class="beam l"></div>
 <div class="beam r"></div>
 
-<div class="marquee top" aria-hidden="true"><div class="track"><span>💦 MATHIEU : SAC DE PISSE 💦</span><span>🎃 OCÉ : TÊTE DE COURGE 🎃</span></div></div>
+<div class="marquee top" aria-hidden="true"><div class="track"><span>💦 MATHIEU : SAC DE PISSE 💦</span><span>🎃 OCÉ : TÊTE DE COURGE 🎃</span><span>😤 LUCIANO : HIGH CORTISOL MALE 😤</span></div></div>
 
-<h1 class="sr">Mathieu : sac de pisse. Océ : tête de courge.</h1>
+<h1 class="sr">Mathieu : sac de pisse. Océ : tête de courge. Luciano : high cortisol male.</h1>
 
 <main id="show" aria-hidden="true">
   <section class="card mathieu" data-k="m">
@@ -349,9 +379,55 @@ body[data-chaos="3"] .track{animation-duration:20s}
     </div>
     <p class="insult split">TÊTE DE COURGE</p>
   </section>
+
+  <section class="card luciano" data-k="l">
+    <h2 class="name"><span class="split">LUCIANO</span><span class="colon">:</span></h2>
+    <div class="art-wrap">
+      <div class="orbit"><i style="--k:0"><b>☕</b></i><i style="--k:1"><b>💢</b></i><i style="--k:2"><b>⏰</b></i><i style="--k:3"><b>📉</b></i></div>
+      <svg class="art" viewBox="0 0 240 240">
+        <g class="jitter">
+          <g class="steam" style="--sx:-14px"><circle cx="48" cy="110" r="9"/><circle cx="42" cy="104" r="7"/><circle cx="50" cy="100" r="6"/></g>
+          <g class="steam" style="--sx:14px"><circle cx="192" cy="110" r="9"/><circle cx="198" cy="104" r="7"/><circle cx="190" cy="100" r="6"/></g>
+          <ellipse cx="56" cy="134" rx="13" ry="19" fill="#f0b48a" stroke="#5a2e12" stroke-width="3"/>
+          <ellipse cx="184" cy="134" rx="13" ry="19" fill="#f0b48a" stroke="#5a2e12" stroke-width="3"/>
+          <ellipse cx="120" cy="132" rx="64" ry="78" fill="#f6c39b" stroke="#5a2e12" stroke-width="3"/>
+          <ellipse class="flush" cx="120" cy="134" rx="61" ry="74" fill="#ff2a2a"/>
+          <path d="M58 104L52 66 72 84 74 44 92 74 102 32 114 68 128 30 136 68 152 38 156 76 176 50 172 88 190 74 182 108Q150 80 120 80T58 104z" fill="#2b1a10" stroke="#120a05" stroke-width="3" stroke-linejoin="round"/>
+          <path d="M114 68L128 30 136 68z" fill="#d9d9d9"/>
+          <path d="M84 100q12-5 24 0t24 0M90 108q10-4 20 0t20 0" fill="none" stroke="#b97a55" stroke-width="2.5" stroke-linecap="round"/>
+          <g class="vein" fill="none" stroke="#e00000" stroke-width="4" stroke-linecap="round">
+            <path d="M146 96q6 2 6 7"/><path d="M166 96q-6 2-6 7"/><path d="M146 112q6-2 6-7"/><path d="M166 112q-6-2-6-7"/>
+          </g>
+          <path d="M78 116L112 126M162 116L128 126" stroke="#2b1a10" stroke-width="7" stroke-linecap="round"/>
+          <g class="eye" data-max="11" data-s=".35">
+            <circle class="white" cx="98" cy="144" r="17" fill="#fff" stroke="#5a2e12" stroke-width="3"/>
+            <path d="M84 140l7 2M83 150l8-1M112 138l-7 3M113 150l-7-2" stroke="#ff4d4d" stroke-width="1.5" stroke-linecap="round"/>
+            <g class="pupil"><circle cx="98" cy="144" r="4" fill="#111"/></g>
+          </g>
+          <g class="eye" data-max="11" data-s=".35">
+            <circle class="white" cx="142" cy="144" r="17" fill="#fff" stroke="#5a2e12" stroke-width="3"/>
+            <path d="M128 140l7 2M127 150l8-1M156 138l-7 3M157 150l-7-2" stroke="#ff4d4d" stroke-width="1.5" stroke-linecap="round"/>
+            <g class="pupil"><circle cx="142" cy="144" r="4" fill="#111"/></g>
+          </g>
+          <rect class="lid" x="123" y="125" width="38" height="22" rx="8" fill="#f6c39b" stroke="#5a2e12" stroke-width="2.5"/>
+          <path d="M84 165q14 8 28 0M128 165q14 8 28 0" fill="none" stroke="#8a5a9a" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+          <path d="M120 150q-8 16 0 20" fill="none" stroke="#b97a55" stroke-width="3" stroke-linecap="round"/>
+          <g class="jaw">
+            <rect x="92" y="180" width="56" height="20" rx="6" fill="#fff" stroke="#5a2e12" stroke-width="3"/>
+            <path d="M92 190h56M102 180v20M111 180v20M120 180v20M129 180v20M138 180v20" stroke="#5a2e12" stroke-width="2"/>
+          </g>
+          <path class="sweat" style="--d:0s" d="M70 112c-3 5-5 8-5 10a5 5 0 0 0 10 0c0-2-2-5-5-10z" fill="#7fd3ff" stroke="#2a7fb8" stroke-width="1.5"/>
+          <path class="sweat" style="--d:-.8s" d="M172 120c-3 5-5 8-5 10a5 5 0 0 0 10 0c0-2-2-5-5-10z" fill="#7fd3ff" stroke="#2a7fb8" stroke-width="1.5"/>
+          <path class="sweat" style="--d:-1.4s" d="M134 88c-3 5-5 8-5 10a5 5 0 0 0 10 0c0-2-2-5-5-10z" fill="#7fd3ff" stroke="#2a7fb8" stroke-width="1.5"/>
+          <path class="sweat" style="--d:-.4s" d="M80 168c-3 5-5 8-5 10a5 5 0 0 0 10 0c0-2-2-5-5-10z" fill="#7fd3ff" stroke="#2a7fb8" stroke-width="1.5"/>
+        </g>
+      </svg>
+    </div>
+    <p class="insult split">HIGH CORTISOL MALE</p>
+  </section>
 </main>
 
-<div class="marquee bottom" aria-hidden="true"><div class="track"><span>🎃 OCÉ : TÊTE DE COURGE 🎃</span><span>💦 MATHIEU : SAC DE PISSE 💦</span></div></div>
+<div class="marquee bottom" aria-hidden="true"><div class="track"><span>🎃 OCÉ : TÊTE DE COURGE 🎃</span><span>💦 MATHIEU : SAC DE PISSE 💦</span><span>😤 LUCIANO : HIGH CORTISOL MALE 😤</span></div></div>
 
 <canvas id="fx" aria-hidden="true"></canvas>
 <div id="flash"></div>
@@ -415,18 +491,30 @@ const SCRIPTS={
     [['Tête. De. Courge.','giant'],['Tête. De. Courge.','chip'],['Tête de courge tête de courge tête de courge !','fast']],
     [['Nananère !','chip'],['Océ, tête de courge !','derp'],['Nananère !','giant']],
   ],
+  l:[
+    [['Luciano','giant'],['high cortisol male!','chip','en']],
+    [['Lu lu lu lu Luciano !','fast'],['High cortisol male!','giant','en']],
+    [['Respire, Luciano.','slow'],['Respire !','chip'],['High cortisol male!','fast','en']],
+    [['Calme-toi, Luciano !','chip'],['Calme-toi !','giant'],['High. Cortisol. Male.','derp','en']],
+    [['Hé Luciano ! Hé ! Hé !','chip'],['High cortisol male! High cortisol male!','fast','en']],
+    [['Nananère !','chip'],['Luciano,','derp'],['high cortisol male!','derp','en'],['Nananère !','giant']],
+  ],
 };
 const TAUNTS=[
-  [['Allôôô ?','chip'],["Y a quelqu'un ?",'giant'],['Mathieu, sac de pisse ! Océ, tête de courge !','fast']],
+  [['Allôôô ?','chip'],["Y a quelqu'un ?",'giant'],['Mathieu, sac de pisse ! Océ, tête de courge ! Luciano,','fast'],['high cortisol male!','fast','en']],
+  [['Psst','slow'],['Luciano...','giant'],['high cortisol male','chip','en']],
   [['Hé ! Hé ! Hé !','chip'],["Touche l'écran !",'giant'],['hihihihi','chip']],
   [['Psst','slow'],['Mathieu...','giant'],['sac de pisse','chip']],
   [['Psst','slow'],['Océ...','giant'],['tête de courge','chip']],
 ];
 const GIGGLES=[[['hihihi','chip']],[['nananère','chip']],[['hé hé hé','giant']],[['ouh','derp']],[['boup','chip']]];
-const POPS={m:['SAC DE PISSE !','💦 SAC DE PISSE 💦','MATHIEU : SAC DE PISSE'],o:['TÊTE DE COURGE !','🎃 TÊTE DE COURGE 🎃','OCÉ : TÊTE DE COURGE']};
-const EMO={m:['💦','💛','🧻','🚽','💧'],o:['🎃','🥒','🍂','🧡','🍁'],x:['✨','🎉','👑','⭐','🌟']};
+const POPS={m:['SAC DE PISSE !','💦 SAC DE PISSE 💦','MATHIEU : SAC DE PISSE'],o:['TÊTE DE COURGE !','🎃 TÊTE DE COURGE 🎃','OCÉ : TÊTE DE COURGE'],l:['HIGH CORTISOL MALE !','😤 HIGH CORTISOL MALE 😤','LUCIANO : HIGH CORTISOL MALE']};
+const EMO={m:['💦','💛','🧻','🚽','💧'],o:['🎃','🥒','🍂','🧡','🍁'],l:['☕','💢','⏰','📉','🔥','😤'],x:['✨','🎉','👑','⭐','🌟']};
+const KINDS=['m','o','l'];
+const HUES={m:[40,45,50,55,60],o:[22,30,36,110,125],l:[0,5,350,355,15]};
+const COLORS={m:'#ffe600',o:'#ff8a00',l:'#ff3b3b'};
 const CHAOS=['😌 Zen','🙂 Normal','🤪 Fou','☢️ Apocalypse'];
-const cards={m:$('.mathieu'),o:$('.oce')};
+const cards={m:$('.mathieu'),o:$('.oce'),l:$('.luciano')};
 const show=$('#show');
 
 /* ---------- Réglages (sauvegardés) ---------- */
@@ -477,16 +565,15 @@ function conf(x,y,vx,vy,h){if(P.length>=cap())return;P.push({t:1,x,y,vx,vy,g:.16
 function spark(x,y){if(P.length>=cap())return;P.push({t:2,x,y,vx:rand(-1.5,1.5),vy:rand(-1.5,1.5),g:.03,drag:.96,s:rand(2,5),c:`hsl(${rand(0,360)|0},100%,70%)`,life:rand(25,45),age:0});}
 
 function rain(){
-  let e,x;const wide=W>760,r=Math.random();
+  let e,x;const wide=W>H;
   if(god&&Math.random()<.55){e='🍔';x=rand(0,W);}
-  else if(r<.42){e=pick(EMO.m);x=wide?rand(0,W*.55):rand(0,W);}
-  else if(r<.84){e=pick(EMO.o);x=wide?rand(W*.45,W):rand(0,W);}
+  else if(Math.random()<.84){const i=Math.random()*3|0;e=pick(EMO[KINDS[i]]);x=wide?rand((i-.15)*W/3,(i+1.15)*W/3):rand(0,W);}
   else{e=pick(EMO.x);x=rand(0,W);}
   emo(x,-50,e,{vy:rand(1.2,3.2),vx:rand(-.3,.3),g:.004,drag:1,s:rand(20,44),sw:rand(.2,.6)});
 }
 function burst(x,y,k,n=1){
-  const em=k==='m'?EMO.m:k==='o'?EMO.o:[...EMO.m,...EMO.o,...EMO.x];
-  const hues=k==='m'?[40,45,50,55,60]:k==='o'?[22,30,36,110,125]:null;
+  const em=k?EMO[k]:[...EMO.m,...EMO.o,...EMO.l,...EMO.x];
+  const hues=k?HUES[k]:null;
   const m=(.6+S.chaos*.35)*n*(god?1.5:1);
   for(let i=0;i<18*m;i++){const a=rand(0,6.283),v=rand(3,11);emo(x,y,god&&Math.random()<.35?'🍔':pick(em),{vx:Math.cos(a)*v,vy:Math.sin(a)*v-4,g:.28,drag:.975,s:rand(22,50),life:rand(70,130)});}
   for(let i=0;i<40*m;i++){const a=rand(0,6.283),v=rand(4,15);conf(x,y,Math.cos(a)*v,Math.sin(a)*v-5,hues?pick(hues)+rand(-6,6):rand(0,360));}
@@ -494,7 +581,7 @@ function burst(x,y,k,n=1){
 function cannon(side){
   const x=side<0?-10:W+10,y=H+10,n=(60+S.chaos*35)*(god?1.6:1),k=Math.sqrt(H/850);
   for(let i=0;i<n;i++){const a=-Math.PI/2-side*rand(.12,.7),v=rand(18,30)*k;conf(x,y,Math.cos(a)*v,Math.sin(a)*v,rand(0,360));}
-  for(let i=0;i<8;i++){const a=-Math.PI/2-side*rand(.15,.6),v=rand(16,24)*k;emo(x,y,god?'🍔':pick([...EMO.m,...EMO.o]),{vx:Math.cos(a)*v,vy:Math.sin(a)*v,g:.2,drag:.98,s:rand(28,48),life:240});}
+  for(let i=0;i<8;i++){const a=-Math.PI/2-side*rand(.15,.6),v=rand(16,24)*k;emo(x,y,god?'🍔':pick([...EMO.m,...EMO.o,...EMO.l]),{vx:Math.cos(a)*v,vy:Math.sin(a)*v,g:.2,drag:.98,s:rand(28,48),life:240});}
 }
 
 /* ---------- Yeux qui suivent ---------- */
@@ -509,6 +596,7 @@ function eyesStep(dt,now){
     const cx=r.left+r.width/2,cy=r.top+r.height/2;
     let tx=px,ty=py;
     if(idle){const t=now/900+e.ph;tx=cx+Math.cos(t)*160;ty=cy+Math.sin(t*1.7)*160;}
+    if(e.k==='l'){tx+=rand(-30,30);ty+=rand(-30,30);}
     const dx=tx-cx,dy=ty-cy,d=Math.hypot(dx,dy)||1,f=e.max*Math.min(1,d/140);
     e.vx+=((dx/d)*f-e.x)*e.st*dt;e.vy+=((dy/d)*f-e.y)*e.st*dt;
     const damp=Math.pow(.78,dt);e.vx*=damp;e.vy*=damp;e.x+=e.vx*dt;e.y+=e.vy*dt;
@@ -596,24 +684,28 @@ function kazoo(f,t,dur){
 }
 SFX.nana=()=>{if(!canPlay())return;let t=AC.currentTime+.03;
   [[392,.3],[330,.3],[440,.17],[392,.17],[330,.5]].forEach(([f,d])=>{kazoo(f,t,d);t+=d+.04;});};
-const sfx=k=>(k==='m'?SFX.splash:SFX.bonk)();
+SFX.stress=()=>{if(!canPlay())return;const t=AC.currentTime+.01;
+  tone(70,t,.14,{type:'sine',vol:.6,to:40});tone(70,t+.18,.14,{type:'sine',vol:.5,to:40});
+  [0,.12,.24].forEach(o=>tone(2000,t+.32+o,.07,{type:'square',vol:.08}));};
+const sfx=k=>({m:SFX.splash,o:SFX.bonk,l:SFX.stress})[k]();
 
 /* ---------- Voix ---------- */
 const synth='speechSynthesis' in window?window.speechSynthesis:null;
-let voice=null;
-function pickVoice(){if(!synth)return;const v=synth.getVoices();voice=v.find(x=>/fr[-_]CA/i.test(x.lang))||v.find(x=>/fr[-_]FR/i.test(x.lang))||v.find(x=>/^fr/i.test(x.lang))||null;}
+let voice=null,voiceEn=null;
+function pickVoice(){if(!synth)return;const v=synth.getVoices();voice=v.find(x=>/fr[-_]CA/i.test(x.lang))||v.find(x=>/fr[-_]FR/i.test(x.lang))||v.find(x=>/^fr/i.test(x.lang))||null;
+  voiceEn=v.find(x=>/en[-_]US/i.test(x.lang))||v.find(x=>/^en/i.test(x.lang))||null;}
 if(synth){pickVoice();synth.onvoiceschanged=pickVoice;}
-function say(text,{pitch=.9,rate=.95,onstart,onend}={}){
+function say(text,{pitch=.9,rate=.95,en=false,onstart,onend}={}){
   if(!synth||!S.voice)return false;
-  const u=new SpeechSynthesisUtterance(text);u.lang=voice?voice.lang:'fr-FR';if(voice)u.voice=voice;
+  const v=en?voiceEn:voice,u=new SpeechSynthesisUtterance(text);u.lang=v?v.lang:en?'en-US':'fr-FR';if(v)u.voice=v;
   u.pitch=pitch;u.rate=rate;u.onstart=onstart||null;u.onend=onend||null;u.onerror=onend||null;synth.speak(u);return true;
 }
 function sayScript(script,{onstart,onend}={}){
   if(!synth||!S.voice)return false;
-  script.forEach(([text,style],i)=>{
+  script.forEach(([text,style,lang],i)=>{
     let[pitch,rate]=V[style];if(god){pitch=rand(0,2);rate=rand(.6,1.2);}
     rate*=S.vspeed;
-    say(text,{pitch,rate,onstart:i===0?onstart:null,onend:i===script.length-1?onend:null});
+    say(text,{pitch,rate,en:lang==='en',onstart:i===0?onstart:null,onend:i===script.length-1?onend:null});
   });
   return true;
 }
@@ -630,7 +722,7 @@ function center(el){const r=el.getBoundingClientRect();return{x:r.left+r.width/2
 function popText(k,x,y){
   if(document.querySelectorAll('.pop').length>12)return;
   const el=document.createElement('div');el.className='pop';el.textContent=pick(POPS[k]);
-  el.style.setProperty('--c',god?`hsl(${rand(0,360)|0},100%,60%)`:k==='m'?'#ffe600':'#ff8a00');
+  el.style.setProperty('--c',god?`hsl(${rand(0,360)|0},100%,60%)`:COLORS[k]);
   el.style.setProperty('--r',rand(-15,15).toFixed(1)+'deg');
   document.body.append(el);
   const w=el.offsetWidth/2+8;el.style.left=clamp(x,w,W-w)+'px';el.style.top=clamp(y,40,H-40)+'px';
@@ -647,11 +739,10 @@ function proclaim(){
   if(synth&&S.voice){
     synth.cancel();
     setTimeout(()=>{
-      sayScript(pick(SCRIPTS.m),{onstart:()=>spot('m',true),onend:()=>spot('m',false)});
-      sayScript(pick(SCRIPTS.o),{onstart:()=>spot('o',true),onend:()=>{spot('o',false);SFX.nana();}});
+      KINDS.forEach((k,i)=>sayScript(pick(SCRIPTS[k]),{onstart:()=>spot(k,true),onend:()=>{spot(k,false);if(i===KINDS.length-1)SFX.nana();}}));
     },750);
   }else{
-    ['m','o'].forEach((k,i)=>{setTimeout(()=>spot(k,true),400+i*1500);setTimeout(()=>spot(k,false),1600+i*1500);});
+    KINDS.forEach((k,i)=>{setTimeout(()=>spot(k,true),400+i*1500);setTimeout(()=>spot(k,false),1600+i*1500);});
   }
 }
 function speakOne(k){
@@ -671,7 +762,7 @@ document.addEventListener('click',e=>{
   if(!ui&&panel.classList.contains('open'))togglePanel(false);
   if(!opened||ui||e.target.closest('#curtain'))return;
   const card=e.target.closest('.card');
-  const k=card?card.dataset.k:((alt^=1)?'m':'o');
+  const k=card?card.dataset.k:KINDS[alt=(alt+1)%3];
   burst(e.clientX,e.clientY,k);popText(k,e.clientX,e.clientY-30);sfx(k);jiggle(k);
   if(card){boostCard(card);speakOne(k);if(Math.random()<.25)SFX.nana();}
   else if(synth&&S.voice&&!synth.speaking&&Math.random()<.35)sayScript(pick(GIGGLES));
@@ -731,7 +822,7 @@ autoT=setTimeout(()=>openCurtain(false),7000);
 function randomEvent(){
   const r=Math.random();
   if(r<.28){cannon(-1);cannon(1);}
-  else if(r<.56){const k=Math.random()<.5?'m':'o',p=center(cards[k]);boostCard(cards[k]);burst(p.x,p.y,k,.6);popText(k,p.x,p.top);if(S.chaos>=2||god)sfx(k);jiggle(k);}
+  else if(r<.56){const k=pick(KINDS),p=center(cards[k]);boostCard(cards[k]);burst(p.x,p.y,k,.6);popText(k,p.x,p.top);if(S.chaos>=2||god)sfx(k);jiggle(k);}
   else if(r<.78){spinLetters();jiggle();}
   else{shake();flash();burst(W/2,H/2,null,.8);if(S.chaos>=3||god)SFX.airhorn(.6);}
 }
@@ -741,10 +832,10 @@ function randomEvent(){
 })();
 
 /* ---------- Onglet qui alterne ---------- */
-const TT=[['💦','Mathieu : sac de pisse'],['🎃','Océ : tête de courge']];let ti=0;
+const TT=[['💦','Mathieu : sac de pisse'],['🎃','Océ : tête de courge'],['😤','Luciano : high cortisol male']];let ti=0;
 const favicon=$('#favicon');
 setInterval(()=>{
-  ti^=1;const[e,t]=TT[ti];document.title=`${e} ${t}`;
+  ti=(ti+1)%TT.length;const[e,t]=TT[ti];document.title=`${e} ${t}`;
   favicon.href='data:image/svg+xml,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">${e}</text></svg>`);
 },2200);
 
@@ -757,7 +848,7 @@ setInterval(()=>{
 },3000);
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden||!unlocked||!synth||!S.voice||!S.chaos)return;
-  synth.cancel();sayScript([['Te revoilà !','chip'],['Océ, tête de courge !','giant'],['Mathieu, sac de pisse !','fast']]);
+  synth.cancel();sayScript([['Te revoilà !','chip'],['Océ, tête de courge !','giant'],['Mathieu, sac de pisse !','fast'],['Luciano,','chip'],['high cortisol male!','chip','en']]);
 });
 
 syncUI();
