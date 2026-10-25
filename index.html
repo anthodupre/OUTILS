@@ -364,6 +364,7 @@ body[data-chaos="3"] .track{animation-duration:20s}
   <h3>⚙️ Réglages</h3>
   <label class="row"><span>🔊 Sons</span><input type="checkbox" id="optSound" class="sw"></label>
   <label class="row"><span>🗣️ Voix</span><input type="checkbox" id="optVoice" class="sw"></label>
+  <div class="row col"><label for="optSpeed">🐢 Vitesse des voix : <b id="speedLbl"></b></label><input type="range" id="optSpeed" min="0.5" max="1.5" step="0.1"></div>
   <div class="row col"><label for="optChaos">🌪️ Chaos : <b id="chaosLbl"></b></label><input type="range" id="optChaos" min="0" max="3" step="1"></div>
   <button id="devBtn" class="btn dev" type="button">🛠️ DEV</button>
   <div id="devBox" hidden>
@@ -396,7 +397,7 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* Voix gossantes : [hauteur, vitesse] */
-const V={chip:[2,1.6],giant:[.1,.65],slow:[.5,.35],fast:[1.6,2.2],derp:[1.4,.8]};
+const V={chip:[2,.95],giant:[.3,.8],slow:[.6,.55],fast:[1.5,1.15],derp:[1.4,.85]};
 const SCRIPTS={
   m:[
     [['Mathieu','chip'],['sac de pisse !','giant']],
@@ -430,12 +431,13 @@ const show=$('#show');
 
 /* ---------- Réglages (sauvegardés) ---------- */
 const KEY='mathieu-oce-reglages';
-const S={sound:true,voice:true,chaos:reduced?1:2};
+const S={sound:true,voice:true,chaos:reduced?1:2,vspeed:.9};
 try{
   const o=JSON.parse(localStorage.getItem(KEY)||'{}');
   if(typeof o.sound==='boolean')S.sound=o.sound;
   if(typeof o.voice==='boolean')S.voice=o.voice;
   if(Number.isInteger(o.chaos))S.chaos=clamp(o.chaos,0,3);
+  if(typeof o.vspeed==='number')S.vspeed=clamp(o.vspeed,.5,1.5);
 }catch(e){}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 let god=false;
@@ -609,7 +611,8 @@ function say(text,{pitch=.9,rate=.95,onstart,onend}={}){
 function sayScript(script,{onstart,onend}={}){
   if(!synth||!S.voice)return false;
   script.forEach(([text,style],i)=>{
-    let[pitch,rate]=V[style];if(god){pitch=rand(0,2);rate=rand(.5,2.5);}
+    let[pitch,rate]=V[style];if(god){pitch=rand(0,2);rate=rand(.6,1.2);}
+    rate*=S.vspeed;
     say(text,{pitch,rate,onstart:i===0?onstart:null,onend:i===script.length-1?onend:null});
   });
   return true;
@@ -678,15 +681,17 @@ $('#speak').addEventListener('click',proclaim);
 
 /* ---------- Panneau réglages + DEV ---------- */
 const panel=$('#panel'),gear=$('#gear');
-const optSound=$('#optSound'),optVoice=$('#optVoice'),optChaos=$('#optChaos'),chaosLbl=$('#chaosLbl');
+const optSound=$('#optSound'),optVoice=$('#optVoice'),optChaos=$('#optChaos'),chaosLbl=$('#chaosLbl'),optSpeed=$('#optSpeed'),speedLbl=$('#speedLbl');
 const devBox=$('#devBox'),devMsg=$('#devMsg'),code=$('#code'),godTools=$('#godTools'),godBanner=$('#godBanner'),stats=$('#stats');
 function togglePanel(on=!panel.classList.contains('open')){panel.classList.toggle('open',on);gear.setAttribute('aria-expanded',on);}
-function syncUI(){optSound.checked=S.sound;optVoice.checked=S.voice;optChaos.value=S.chaos;chaosLbl.textContent=CHAOS[S.chaos];document.body.dataset.chaos=S.chaos;}
+function syncUI(){optSound.checked=S.sound;optVoice.checked=S.voice;optChaos.value=S.chaos;chaosLbl.textContent=CHAOS[S.chaos];optSpeed.value=S.vspeed;speedLbl.textContent='×'+S.vspeed.toFixed(1);document.body.dataset.chaos=S.chaos;}
 gear.addEventListener('click',()=>togglePanel());
 addEventListener('keydown',e=>{if(e.key==='Escape')togglePanel(false);});
 optSound.addEventListener('change',()=>{S.sound=optSound.checked;save();if(S.sound){unlock();SFX.bonk();}});
 optVoice.addEventListener('change',()=>{S.voice=optVoice.checked;save();if(!S.voice&&synth)synth.cancel();});
 optChaos.addEventListener('input',()=>{S.chaos=+optChaos.value;save();syncUI();});
+optSpeed.addEventListener('input',()=>{S.vspeed=+optSpeed.value;save();syncUI();});
+optSpeed.addEventListener('change',()=>{unlock();if(synth){synth.cancel();sayScript([['Mathieu','chip'],['sac de pisse','giant']]);}});
 $('#devBtn').addEventListener('click',()=>{devBox.hidden=!devBox.hidden;if(!devBox.hidden)code.focus();});
 function setGod(on){
   god=on;document.body.classList.toggle('god',on);godBanner.hidden=!on;godTools.hidden=!on;
