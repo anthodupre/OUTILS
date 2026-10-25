@@ -19,4 +19,6 @@ Tableau de bord pour les employés qui travaillent dehors aux Glissades. Il ne m
 
 **Réglages ⚙** : thème, taille du texte, fréquence d'actualisation. Le bouton **DEV** demande le code `BURGER` et ouvre le mode test : scénarios simulés, réglages fins, voyage dans le temps, diagnostic des sources.
 
+**Site en ligne** : https://glisse.ca est publié depuis le dépôt `anthodupre/GLISSE` (branche `main`). Pour mettre le site à jour, copier les fichiers de `glissades/` dans ce dépôt. La branche `gh-pages` d'OUTILS ne sert plus.
+
 **Aucun entretien prévu** : l'horaire est un horaire type de saison, calqué sur 2026-2027 et répété chaque année. Les dates de la relâche sont approximatives pour les saisons suivantes. L'état ouvert ou fermé vient du site du Domaine. Sources gratuites, sans clé : Open-Meteo, Environnement et Changement climatique Canada (GeoMet) et le site du Domaine (état des zones seulement).
