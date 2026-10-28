@@ -789,6 +789,10 @@ function build() {
     return Object.assign({}, z, {live, es, est:es != null ? glv(es) : null, est3:g3 ? glv(adj(g3.s, z.dv)) : null,
       closed:!!(live && live.fr && live.fr.o === 0), meas:m ? Math.round(m.kmh) : null});
   });
+  /* Glissades fermées : pas de neige au sol, hors saison ou site officiel fermé */
+  const noSnow = !!(V.cur && V.cur.sd != null && V.cur.sd * 100 < 5);
+  V.closed = !(DEV.unlocked && DEV.sim) && (noSnow || V.siteOpen === false || dy.state === 'Hors saison');
+  V.closedWhy = noSnow ? 'Pas de neige au sol' : dy.state === 'Hors saison' ? 'Hors saison' : 'Selon le site officiel';
   plan(V, H, now);
   /* Puces d'alerte */
   const ch = [];
@@ -807,7 +811,7 @@ function build() {
     if ((c.wg || 0) >= 50) ch.push({cls:c.wg >= 70 ? 'bad' : 'warn', txt:'💨 Rafales ' + n0(c.wg)});
     if (c.vis != null && c.vis < 1000) ch.push({cls:'warn', txt:'🌫 Visibilité ' + visTxt(c.vis)});
     if (c.feel != null && Math.round(c.feel) <= -28) ch.push({cls:Math.round(c.feel) <= -40 ? 'bad' : 'warn', txt:'🥶 Gelures ' + riskOf(c.feel).frost});
-    if (V.glide && V.glide.ice) ch.push({cls:'warn', txt:'⚡ Glisse glacée'});
+    if (V.glide && V.glide.ice && !V.closed) ch.push({cls:'warn', txt:'⚡ Glisse glacée'});
   }
   if (!ch.length) ch.push({cls:'ok', txt:V.cur ? '✓ Aucune alerte' : 'Chargement des données…'});
   V.chips = ch;
@@ -852,9 +856,9 @@ function plan(V, H, now) {
   /* Pistes et équipements : conditions prévues, par importance */
   const P = [], add = (pr, ico, txt) => P.push({p:pr, ico, txt});
   const later = (V.glDay || []).filter(x => x.t > now);
-  if (g) {
+  if (g && !V.closed) {
     if (g.ice) add(1, '🧊', 'Pistes glacées : glisse très rapide jusqu\'en fin de piste');
-    else if (g.lv.k === 4) add(1, '⚡', 'Glisse très rapide : les embarcations vont plus loin en fin de piste');
+    else if (g.lv.k === 4) add(1, '⚡', 'Glisse très rapide jusqu\'en fin de piste');
     else { const f = later.find(x => x.lv.k === 4 || x.ice); if (f) add(2, '⚡', 'Glisse très rapide dès ' + hh(f.t)); }
   }
   if ((sn.rate || 0) >= 0.3) add(1, '❄️', 'Neige ' + cm(sn.rate) + '/h : couloirs et sorties de tapis se recouvrent' + (sn.rate >= 1 ? ' rapidement' : ''));
@@ -871,7 +875,7 @@ function plan(V, H, now) {
   if (V.set && sc && sc.fm && sc.fm > V.set) add(3, '🌙', 'Noirceur vers ' + hm(V.set + 30 * 60000) + ', ouvert jusqu\'à ' + sc.f + ' h');
   if (dy.night && dy.night.q && dy.night.win) add(3, '🌨️', 'Fabrication de neige cette nuit : ' + dy.night.q.n.toLowerCase() + ' (' + dy.night.win + ')');
   if (!P.length && c) add(3, '✓', 'Conditions stables');
-  P.sort((a, b) => a.p - b.p); V.pistes = P;
+  P.sort((a, b) => a.p - b.p); V.pistes = V.closed ? P.filter(x => x.ico === '🌨️') : P;
 }
 
 /* ===================== Rendu ===================== */
@@ -928,7 +932,8 @@ function renderMain() {
   const hero = $('#hero');
   if (!g) {
     hero.className = 'card hero l0';
-    hero.innerHTML = '<div class="hero-top"><div class="cap"><span>Vitesse de glisse</span></div><div class="hero-main"><span class="hero-lv">' + (D.busy ? 'Chargement…' : 'Indisponible') + '</span></div></div>';
+    hero.innerHTML = V.closed ? '<div class="hero-top"><div class="cap"><span>Glissades</span></div><div class="hero-main"><span class="hero-lv">Fermées</span></div><div class="hero-sub">' + esc(V.closedWhy) + '</div></div>' :
+      '<div class="hero-top"><div class="cap"><span>Vitesse de glisse</span></div><div class="hero-main"><span class="hero-lv">' + (D.busy ? 'Chargement…' : 'Indisponible') + '</span></div></div>';
   } else {
     const k = g.ice ? 'ice' : g.lv.k;
     const f = g.F.filter(x => x.ico !== '🌡️').sort((a, b) => Math.abs(b.v) - Math.abs(a.v))[0] || g.F[0];
@@ -942,20 +947,26 @@ function renderMain() {
       const pr = (x.sn || 0) >= 0.1 ? '<span class="p">' + cm(x.sn).replace(' ', '') + '</span>' : (x.rain || 0) >= 0.1 ? '<span class="p rn">' + mm(x.rain).replace(' ', '') + '</span>' : '<span class="p no">·</span>';
       hs += '<div class="hc"><b>' + (i === 0 ? 'Mtn' : lp(x.t).h + 'h') + '</b><span class="e">' + w.emoji + '</span><i class="k' + (gh ? (gh.ice ? 'ice' : gh.lv.k) : 0) + '"></i><span class="T">' + tf(T) + '</span>' + pr + '</div>';
     }
+    if (V.closed) {
+      hero.className = 'card hero l0';
+      hero.innerHTML = '<div class="hero-top"><div class="cap"><span>Glissades</span></div><div class="hero-main"><span class="hero-lv">Fermées</span></div>' +
+        '<div class="hero-sub">' + esc(V.closedWhy) + '</div></div>' + (hs ? '<div class="hero-bot"><div class="hs" data-act="m-hours" style="--n:' + n + '">' + hs.replace(/<i class="k[^"]*"><\/i>/g, '<i class="k0"></i>') + '</div></div>' : '');
+    } else {
     hero.className = 'card hero l' + k;
     hero.innerHTML = '<div class="hero-top"><div class="cap"><span>Vitesse de glisse · météo</span>' + (g.ice ? '<span class="tag">GLACÉE</span>' : '') + '</div>' +
       '<div class="hero-main"><span class="hero-lv">' + g.lv.n + '</span>' + (V.glTrend ? '<span class="hero-trend">' + V.glTrend.a + ' ' + V.glTrend.n.toLowerCase() + '</span>' : '') + '</div>' +
       '<div class="hero-sub">' + esc(sub) + '</div></div>' +
       '<div class="hero-bot"><div class="sects">' + (V.sect || []).map(x => '<div class="sect"><span>' + (x.n === 'Intermédiaire' ? 'Interm.' : x.n) + '</span><b class="lvp k' + x.lv.k + '">' + x.lv.n + '</b></div>').join('') + '</div>' +
       (hs ? '<div class="hs" data-act="m-hours" style="--n:' + n + '">' + hs + '</div>' : '') + '</div>';
+    }
   }
   /* Zones */
-  $('#zones').innerHTML = (V.zones || []).map(z => '<div class="zc k' + (z.est ? z.est.k : 0) + (z.closed ? ' cl' : '') + '" data-act="zone" data-id="' + z.id + '"><b>' + z.c + '</b><span>' + (z.est ? ABZ[z.est.k] : '—') + '</span></div>').join('') +
+  $('#zones').innerHTML = (V.zones || []).map(z => '<div class="zc k' + (z.est && !V.closed ? z.est.k : 0) + (z.closed ? ' cl' : '') + '" data-act="zone" data-id="' + z.id + '"><b>' + z.c + '</b><span>' + (V.closed ? 'Fermé' : z.est ? ABZ[z.est.k] : '—') + '</span></div>').join('') +
     '<div class="zc leg" data-act="m-glide"><b>ⓘ</b><span>Zones</span></div>';
   /* À noter : pistes et équipements */
   const N = (V.pistes || []).filter(x => x.ico !== '✓');
   $('#notes').innerHTML = '<div class="cap"><span>À noter</span>' + (N.length ? '<span class="cnt">' + N.length + '</span>' : '') + '</div><ul class="nl">' +
-    (N.length ? N.map(x => '<li class="p' + x.p + '"><i></i><span>' + esc(x.txt) + '</span></li>').join('') : '<li class="p3"><i></i><span>' + (V.cur ? 'Conditions stables' : D.busy ? 'Chargement…' : 'Données indisponibles') + '</span></li>') + '</ul>';
+    (N.length ? N.map(x => '<li class="p' + x.p + '"><i></i><span>' + esc(x.txt) + '</span></li>').join('') : '<li class="p3"><i></i><span>' + (V.closed ? 'Rien à signaler pendant la fermeture' : V.cur ? 'Conditions stables' : D.busy ? 'Chargement…' : 'Données indisponibles') + '</span></li>') + '</ul>';
   /* Déneigement */
   $('#t-sn').innerHTML = !sn ? '<div class="cap"><span>Déneigement</span></div><div class="kvs">' + kv('Données', '—') + '</div>' :
     '<div class="cap"><span>Déneigement</span><span class="badge ' + sn.lv + '">' + sn.lvTxt + '</span></div><div class="kvs">' +
@@ -1119,7 +1130,7 @@ function mZone(id) {
   const log = LS.get('gpdh.log', []).filter(e => e.z === id).slice(0, 4);
   let h = '<div class="g2">' + R('Vitesse (météo)', z.est ? '<span class="sp k' + z.est.k + '">' + z.est.n + '</span> ' + z.es : '—') + R('Dans 3 h', z.est3 ? '<span class="sp k' + z.est3.k + '">' + z.est3.n + '</span>' : '—') +
     R('État (site)', esc(l.etat ? cap(l.etat) : '—')) + R('Pistes ouvertes', l.fr ? l.fr.o + '/' + l.fr.t : '—/' + z.p) + R('Soirée', esc(l.soir ? cap(l.soir) : z.soir ? 'Disponible' : 'Non disponible')) +
-    R('Niveau', esc(l.niv || z.niv)) + R('Versant', esc(z.v)) + R('Remontée', esc(l.rem || z.rem)) + R('Glisseurs', esc(l.gl || z.gl)) +
+    R('Niveau', esc(l.niv || z.niv)) + R('Versant', esc(z.v)) + R('Remontée', esc(l.rem || z.rem)) +
     R('Grandeur min.', esc(l.taille || z.taille || 'aucune')) + R('Casque', esc(l.casque || z.casque || 'Fortement recommandé')) + '</div>';
   if (z.note) h += '<p class="mute">' + esc(z.note) + '</p>';
   if (log.length) h += '<h4>Mesures chrono récentes</h4>' + log.map(e => R(hm(e.t), (e.kmh ? n0(e.kmh) + ' km/h' : '') + (e.s ? ' · ' + e.s.toFixed(1).replace('.', ',') + ' s' : ''))).join('');
