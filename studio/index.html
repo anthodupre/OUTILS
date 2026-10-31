@@ -157,7 +157,7 @@ const fmtTime=s=>{s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+':'+String(
 const DEF={
   mode:'rings',
   // Anneaux
-  rings:100,shape:'circle',sides:6,gap:45,gapPoly:60,ringInner:90,ringOuter:500,ringThick:0,
+  rings:100,shape:'circle',sides:6,gap:45,gapPoly:60,zoom:true,zoomR:360,ringGrow:3,spiral:6,ringInner:90,ringOuter:500,ringThick:0,
   rotSpeed:70,rotAlt:false,rotRamp:0,gapAlign:'spiral',
   // Arène (grossit / multiplie / bataille / fils)
   arenaR:470,arenaGap:40,arenaRot:60,growAmount:4,multiplyK:2,maxBalls:400,
@@ -165,7 +165,7 @@ const DEF={
   // Plinko
   pRows:12,pBalls:300,pRate:10,pLabels:'',
   // Balles et physique
-  balls:1,ballSize:14,ballSpeed:800,gravity:1200,bounce:.9,minSpeed:0,maxSpeed:2600,
+  balls:1,ballSize:14,ballSpeed:1000,gravity:1500,bounce:1,minSpeed:0,energy:.8,maxSpeed:3200,
   growOnBounce:0,speedUp:0,ballCollide:false,simSpeed:1,timer:0,maxDur:120,
   // Look
   aspect:'9:16',quality:'1080',bg:'black',palette:'rainbow',ballColor:'white',ballCustom:'#ffffff',
@@ -209,9 +209,9 @@ const PRESETS=[
   {n:'🌈 100 anneaux',d:{}},
   {n:'🇫🇷 100 anneaux (FR)',d:{lang:'fr',title:"La balle va-t-elle s'échapper de {n} anneaux ?"}},
   {n:'⏱️ Sortir en 60 s',d:{rings:30,timer:60,gap:40,rotSpeed:80,gapAlign:'random',title:'Can it escape in {t} seconds?'}},
-  {n:'⬡ Hexagones',d:{rings:25,shape:'poly',sides:6,gapPoly:65,ringThick:6,rotSpeed:50,title:'Will the ball escape {n} hexagons?'}},
-  {n:'🔺 Triangles',d:{rings:26,shape:'poly',sides:3,gapPoly:45,ringThick:8,rotSpeed:45,ringInner:130,title:'Can it escape {n} triangles?'}},
-  {n:'💥 Chaos 200',d:{rings:200,balls:3,ballSize:8,ballSpeed:1100,gap:40,rotSpeed:90,ringInner:60,palette:'neon',ballColor:'rainbow',title:'3 balls vs {n} rings'}},
+  {n:'⬡ Hexagones',d:{rings:30,shape:'poly',sides:6,gapPoly:38,rotSpeed:55,title:'Will the ball escape {n} hexagons?'}},
+  {n:'🔺 Triangles',d:{rings:40,shape:'poly',sides:3,gapPoly:25,rotSpeed:45,ringGrow:4,spiral:15,title:'Can it escape {n} triangles?'}},
+  {n:'💥 Chaos 200',d:{rings:200,balls:3,ballSize:9,ballSpeed:1100,gap:40,rotSpeed:90,ringGrow:2.5,palette:'neon',ballColor:'rainbow',title:'3 balls vs {n} rings'}},
   {n:'🎈 Grossit à chaque rebond',d:{mode:'grow',ballSize:20,gravity:700,bounce:1,minSpeed:600,noteMode:'melody',melody:'ode',instrument:'bell',trail:'line',ballColor:'rainbow',title:'Every bounce makes it bigger 🎵'}},
   {n:'🧬 1 sortie = 2 balles',d:{mode:'multiply',ballSize:10,arenaGap:36,arenaRot:70,gravity:500,bounce:1,minSpeed:600,maxBalls:400,ballColor:'rainbow',trail:'none',title:'Every escape = {k} balls 🤯'}},
   {n:'⚔️ Quelle couleur gagne ?',d:{mode:'battle',ballSize:42,arenaGap:20,arenaRot:50,gravity:0,ballSpeed:650,bounce:1,minSpeed:500,rule:'first',trail:'line',counter:'none',title:'Which color escapes first?'}},
@@ -247,13 +247,17 @@ const F=[
   {k:'gap',t:'range',tab:'mode',l:'Taille du trou',u:'°',min:5,max:120,step:1,m:RINGS,if:s=>s.shape==='circle',r:1},
   {k:'arenaGap',t:'range',tab:'mode',l:'Taille du trou',u:'°',min:5,max:120,step:1,m:ARENA,if:s=>s.shape==='circle',r:1},
   {k:'gapPoly',t:'range',tab:'mode',l:'Taille du trou',u:' % du côté',min:10,max:100,step:1,m:['rings',...ARENA],if:s=>s.shape==='poly',r:1},
-  {k:'ringInner',t:'range',tab:'mode',l:'Rayon du premier anneau',min:30,max:300,step:5,m:RINGS,r:1},
-  {k:'ringOuter',t:'range',tab:'mode',l:'Rayon du dernier anneau',min:150,max:520,step:5,m:RINGS,r:1},
+  {k:'zoom',t:'tog',tab:'mode',l:"📷 Caméra qui recule (anneaux jusqu'au bord, comme TikTok)",m:RINGS,r:1},
+  {k:'zoomR',t:'range',tab:'mode',l:'Taille de la zone de la balle',min:120,max:500,step:5,m:RINGS,if:s=>s.zoom,r:1},
+  {k:'ringGrow',t:'range',tab:'mode',l:'Écart entre les anneaux',u:' %',min:1,max:12,step:.5,m:RINGS,if:s=>s.zoom,r:1},
+  {k:'ringInner',t:'range',tab:'mode',l:'Rayon du premier anneau',min:30,max:300,step:5,m:RINGS,if:s=>!s.zoom,r:1},
+  {k:'ringOuter',t:'range',tab:'mode',l:'Rayon du dernier anneau',min:150,max:520,step:5,m:RINGS,if:s=>!s.zoom,r:1},
   {k:'ringThick',t:'range',tab:'mode',l:'Épaisseur des anneaux (0 = auto)',min:0,max:30,step:1,m:RINGS,r:1},
   {k:'rotSpeed',t:'range',tab:'mode',l:'Vitesse de rotation',u:' °/s',min:0,max:360,step:1,m:RINGS},
   {k:'rotAlt',t:'tog',tab:'mode',l:'Sens de rotation alterné',m:RINGS},
   {k:'rotRamp',t:'range',tab:'mode',l:"Plus vite vers l'extérieur",u:' %',min:0,max:300,step:5,m:RINGS},
   {k:'gapAlign',t:'seg',tab:'mode',l:'Position des trous',o:[['spiral','🌀 Spirale'],['random','🎲 Hasard'],['aligned','⬆️ Alignés']],m:RINGS,r:1},
+  {k:'spiral',t:'range',tab:'mode',l:'Décalage de la spirale',u:'°',min:0,max:40,step:1,m:RINGS,if:s=>s.gapAlign==='spiral',r:1},
   {k:'growAmount',t:'range',tab:'mode',l:'Grossit de',u:' px / rebond',min:.5,max:20,step:.5,m:['grow']},
   {k:'arenaR',t:'range',tab:'mode',l:"Taille de l'arène",min:200,max:520,step:5,m:['grow','strings'],r:1},
   {k:'arenaRot',t:'range',tab:'mode',l:"Rotation de l'arène",u:' °/s',min:0,max:360,step:1,m:['grow','multiply','battle']},
@@ -273,6 +277,7 @@ const F=[
   {k:'ballSpeed',t:'range',tab:'phys',l:'Vitesse de départ',min:0,max:2500,step:10,r:1},
   {k:'gravity',t:'range',tab:'phys',l:'Gravité',min:0,max:4000,step:10},
   {k:'bounce',t:'range',tab:'phys',l:'Rebond (1 = parfait)',min:.3,max:1.2,step:.01},
+  {k:'energy',t:'range',tab:'phys',l:'Énergie des rebonds (hauteur)',min:0,max:1.5,step:.05,m:['rings','grow','strings']},
   {k:'minSpeed',t:'range',tab:'phys',l:'Vitesse minimum après rebond',min:0,max:2000,step:10,m:NOPLINKO},
   {k:'maxSpeed',t:'range',tab:'phys',l:'Vitesse maximum',min:200,max:6000,step:50},
   {k:'growOnBounce',t:'range',tab:'phys',l:'Grossit à chaque rebond',u:' px',min:0,max:5,step:.1,m:['rings','multiply','battle','strings']},
@@ -350,7 +355,7 @@ let noteIdx=0;
 function reset(){
   rng=mulberry32(S.seed>>>0);
   layout();
-  Object.assign(world,{mode:S.mode,t:0,steps:0,phase:S.countdown?'cd':'run',cd:0,cdLast:4,end:null,endT:0,balls:[],rings:[],cur:0,arena:null,
+  Object.assign(world,{mode:S.mode,Z:1,R0:0,t:0,steps:0,phase:S.countdown?'cd':'run',cd:0,cdLast:4,end:null,endT:0,balls:[],rings:[],cur:0,arena:null,
     bounces:0,lines:[],feed:[],rows:null,P:null,bins:null,binF:null,spawned:0,spawnAcc:0,landed:0,timeLeft:S.timer,shake:0,
     winner:null,escaped:0,inside:0,nextId:0,shownGo:false});
   particles.length=0;noteIdx=0;
@@ -361,7 +366,7 @@ function reset(){
 /* ---------- Anneaux / arènes ---------- */
 function makeRing(i,r,t,rot,gap){
   const n=S.shape==='poly'?Math.round(S.sides):0;
-  return{i,r,t,rot,gap,w:0,alive:true,flash:0,shape:n?'poly':'circle',n,inr:n?r*Math.cos(Math.PI/n):r,cx:CX,cy:CY,segs:null,segRot:NaN,col:'#fff'};
+  return{i,r,t,r0:r,t0:t,rot,gap,w:0,zr:0,alive:true,flash:0,shape:n?'poly':'circle',n,inr:n?r*Math.cos(Math.PI/n):r,cx:CX,cy:CY,segs:null,segRot:NaN,segR:NaN,col:'#fff'};
 }
 function gapFor(r,t,br,deg,pct){
   if(S.shape==='poly'){const L=2*r*Math.sin(Math.PI/Math.round(S.sides));return clamp(Math.max(pct/100,(2.3*br+t)/L),0,1);}
@@ -369,7 +374,7 @@ function gapFor(r,t,br,deg,pct){
 }
 function arenaRing(r,br){const t=8*A;return makeRing(0,r,t,-Math.PI/2,gapFor(r,t,br,S.arenaGap,S.gapPoly));}
 function ringSegs(g){
-  if(g.segRot===g.rot)return g.segs;
+  if(g.segRot===g.rot&&g.segR===g.r)return g.segs;
   const n=g.n,segs=[],a0=g.rot-Math.PI/n;
   let px=g.cx+Math.cos(a0)*g.r,py=g.cy+Math.sin(a0)*g.r;
   for(let j=0;j<n;j++){
@@ -381,7 +386,7 @@ function ringSegs(g){
     }else segs.push([px,py,qx,qy]);
     px=qx;py=qy;
   }
-  g.segs=segs;g.segRot=g.rot;return segs;
+  g.segs=segs;g.segRot=g.rot;g.segR=g.r;return segs;
 }
 let lastPX=0,lastPY=0;
 /* Choc balle / point (ou segment, arc…) : renvoie la vitesse d'impact */
@@ -400,7 +405,7 @@ function collideSeg(b,s,rad,g,e){
   const ax=s[0],ay=s[1],ex=s[2]-ax,ey=s[3]-ay,l2=ex*ex+ey*ey;
   let t=l2?((b.x-ax)*ex+(b.y-ay)*ey)/l2:0;t=t<0?0:t>1?1:t;
   const px=ax+ex*t,py=ay+ey*t;
-  return contact(b,px,py,rad,-g.w*(py-g.cy),g.w*(px-g.cx),e);
+  return contact(b,px,py,rad,-g.w*(py-g.cy)+g.zr*(px-g.cx),g.w*(px-g.cx)+g.zr*(py-g.cy),e);
 }
 function collideRing(b,g,e){
   const dx=b.x-g.cx,dy=b.y-g.cy,dist=Math.hypot(dx,dy),reach=b.r+g.t/2+1;
@@ -413,7 +418,7 @@ function collideRing(b,g,e){
       if(rel<=len){px=g.cx+dx/dist*g.r;py=g.cy+dy/dist*g.r;}
       else{const a=(rel-len)<(TAU-rel)?start+len:start;px=g.cx+Math.cos(a)*g.r;py=g.cy+Math.sin(a)*g.r;}
     }
-    return contact(b,px,py,g.t/2,-g.w*(py-g.cy),g.w*(px-g.cx),e);
+    return contact(b,px,py,g.t/2,-g.w*(py-g.cy)+g.zr*(px-g.cx),g.w*(px-g.cx)+g.zr*(py-g.cy),e);
   }
   if(dist>g.r+reach||dist<g.inr-reach)return 0;
   let hit=0;
@@ -456,7 +461,14 @@ function bounced(b,imp,g){
   b.bounces++;world.bounces++;b.flash=1;if(g)g.flash=1;
   if(S.mode!=='plinko'){
     const sp=Math.hypot(b.vx,b.vy);
-    if(sp>1e-6){let tg=sp*(1+S.speedUp/100);tg=Math.max(tg,S.minSpeed*A);tg=Math.min(tg,S.maxSpeed*A);b.vx*=tg/sp;b.vy*=tg/sp;}
+    if(sp>1e-6){
+      let tg=sp*(1+S.speedUp/100);tg=Math.max(tg,S.minSpeed*A);
+      if(S.energy>0&&S.gravity>0&&(S.mode==='rings'||S.mode==='grow'||S.mode==='strings')){
+        const box=S.mode==='rings'?(world.rings[world.cur]||{inr:world.R0}).inr:world.arena.inr;
+        tg=Math.max(tg,Math.sqrt(2*S.gravity*A*S.energy*Math.max(20,2*(box-b.r))));
+      }
+      tg=Math.min(tg,S.maxSpeed*A);b.vx*=tg/sp;b.vy*=tg/sp;
+    }
     if(S.growOnBounce>0)b.r=Math.min(b.r+S.growOnBounce*A,Math.max(b.r,maxGrow()));
   }
   const md=MODES[S.mode];if(md.onBounce)md.onBounce(b,g,imp);
@@ -507,19 +519,37 @@ const isEmoji=s=>/\p{Extended_Pictographic}|\p{Regional_Indicator}/u.test(s)&&!/
 const MODES={
   rings:{
     setup(){
-      const N=Math.max(1,Math.round(S.rings)),inner=S.ringInner*A,outer=Math.max(inner,S.ringOuter*A),sp=N>1?(outer-inner)/(N-1):0;
-      const t=S.ringThick>0?S.ringThick*A:clamp(sp*.85||8*A,1.5,10*A),br=Math.min(S.ballSize*A,inner*.42);
-      const dir=S.rotAlt?1:Math.sign(S.rotSpeed)||1;
-      for(let i=0;i<N;i++){
-        const r=inner+i*sp;
-        const rot=S.gapAlign==='aligned'?-Math.PI/2:S.gapAlign==='random'?rnd(0,TAU):-Math.PI/2-dir*i*.42+rnd(-.12,.12);
-        world.rings.push(makeRing(i,r,t,rot,gapFor(r,t,br,S.gap,S.gapPoly)));
+      const N=Math.max(1,Math.round(S.rings)),dir=S.rotAlt?1:Math.sign(S.rotSpeed)||1;
+      let radius,thick,R0;
+      if(S.zoom){
+        // Anneaux en progression géométrique : la caméra recule pour garder l'anneau actif à la même taille
+        const q=1+S.ringGrow/100;R0=S.zoomR*A;
+        radius=i=>R0*Math.pow(q,i);
+        thick=r=>S.ringThick>0?S.ringThick*A*r/R0:Math.max(1.5,r*(q-1)*.82);
+      }else{
+        const inner=S.ringInner*A,outer=Math.max(inner,S.ringOuter*A),sp=N>1?(outer-inner)/(N-1):0,t=S.ringThick>0?S.ringThick*A:clamp(sp*.85||8*A,1.5,10*A);
+        R0=inner;radius=i=>inner+i*sp;thick=()=>t;
       }
-      spawnBalls(S.balls,inner*.3,br);
+      const br=Math.min(S.ballSize*A,R0*.42),sp=S.spiral*D2R;
+      for(let i=0;i<N;i++){
+        const r=radius(i),t=thick(r),rc=S.zoom?R0:r,tc=S.zoom?thick(R0):t;
+        const rot=S.gapAlign==='aligned'?-Math.PI/2:S.gapAlign==='random'?rnd(0,TAU):-Math.PI/2-dir*i*sp+rnd(-sp*.25,sp*.25);
+        world.rings.push(makeRing(i,r,t,rot,gapFor(rc,tc,br,S.gap,S.gapPoly)));
+      }
+      world.R0=R0;
+      spawnBalls(S.balls,R0*.3,br);
     },
     step(dt){
       const R=world.rings,N=R.length,base=S.rotSpeed*D2R;
-      for(let i=world.cur;i<N;i++){const g=R[i];g.w=base*(S.rotAlt&&i%2?-1:1)*(1+S.rotRamp/100*i/Math.max(1,N-1));g.rot+=g.w*dt;}
+      let zr=0;
+      if(S.zoom&&world.cur<N){
+        const zt=world.R0/R[world.cur].r0,z=world.Z+(zt-world.Z)*(1-Math.exp(-dt*6));
+        zr=(z-world.Z)/dt/z;world.Z=z;
+      }
+      for(let i=world.cur;i<N;i++){
+        const g=R[i];g.w=base*(S.rotAlt&&i%2?-1:1)*(1+S.rotRamp/100*i/Math.max(1,N-1));g.rot+=g.w*dt;
+        if(S.zoom){g.r=g.r0*world.Z;g.t=g.t0*world.Z;g.inr=g.n?g.r*Math.cos(Math.PI/g.n):g.r;g.zr=zr;}
+      }
       for(const b of world.balls){
         if(!b.alive)continue;
         if(world.cur>=N){flyFree(b,dt);continue;}
@@ -776,7 +806,7 @@ function finishSnd(kind){
    DESSIN
    ================================================================ */
 const PAL={
-  rainbow:t=>`hsl(${Math.round(t*330)},90%,58%)`,
+  rainbow:t=>`hsl(${Math.round(t*355)},90%,58%)`,
   neon:t=>`hsl(${Math.round(180+t*150)},100%,62%)`,
   pastel:t=>`hsl(${Math.round(t*330)},80%,78%)`,
   fire:t=>`hsl(${Math.round(t*55)},100%,${Math.round(48+t*12)}%)`,
@@ -786,7 +816,7 @@ const PAL={
 };
 const pal=t=>(PAL[S.palette]||PAL.rainbow)(clamp(t,0,1));
 function recolor(){
-  const N=world.rings.length;world.rings.forEach((g,i)=>g.col=pal(N>1?i/(N-1):.5));
+  const N=world.rings.length;world.rings.forEach((g,i)=>g.col=pal(S.zoom?(.55+i*.021)%1:N>1?i/(N-1):.5));
   if(world.arena)world.arena.col=S.palette==='rainbow'?'#ffffff':pal(.55);
 }
 let aliveCount=0;
@@ -863,7 +893,8 @@ function drawMode(fdt){
     const R=world.rings,N=R.length;
     if(world.cur<N&&S.bg!=='black'){const g=R[world.cur];ctx.fillStyle='#000';ringPath(g,(g.shape==='circle'?g.r:g.r)-g.t/2);ctx.fill();}
     ctx.lineCap=S.shape==='poly'?'round':'butt';
-    for(let i=N-1;i>=world.cur;i--)strokeRing(R[i],fdt);
+    const far=Math.hypot(Math.max(CX,W-CX),Math.max(CY,H-CY))+20;
+    for(let i=N-1;i>=world.cur;i--){const g=R[i];if(g.r-g.t>far){g.flash=0;continue;}strokeRing(g,fdt);}
     centerCount(N-world.cur);
   }else if(S.mode==='plinko'){
     const P=world.P;
