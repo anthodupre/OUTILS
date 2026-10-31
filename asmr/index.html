@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>ASMR Zen</title>
+<meta name="description" content="Jeu ASMR : papier bulle, pop-it, jardin zen, slime, sable cinétique et plus, avec des sons doux.">
+<meta name="theme-color" content="#1b1535">
+<meta name="robots" content="noindex">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%AA%B7%3C/text%3E%3C/svg%3E">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+:root{--bg1:#f3eefc;--bg2:#dff3ec;--card:rgba(255,255,255,.78);--txt:#2b2540;--mut:#6f6a85;--line:#d9d3ea;--acc:#8b5cf6;--acc2:#34d399;--sheet:#fff;--inp:#f6f3fb}
+:root[data-theme=dark]{--bg1:#1b1535;--bg2:#0f1f2a;--card:rgba(42,35,71,.8);--txt:#f1eefc;--mut:#a9a3c4;--line:#3a3360;--sheet:#221c3f;--inp:#15112b}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg1:#1b1535;--bg2:#0f1f2a;--card:rgba(42,35,71,.8);--txt:#f1eefc;--mut:#a9a3c4;--line:#3a3360;--sheet:#221c3f;--inp:#15112b}}
+html,body{margin:0;height:100%;overflow:hidden;background:linear-gradient(160deg,var(--bg1),var(--bg2)) fixed;color:var(--txt);
+  font:15px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;
+  -webkit-touch-callout:none;overscroll-behavior:none;touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer}
+input,textarea{-webkit-user-select:text;user-select:text}
+#app{position:fixed;inset:0;display:flex;flex-direction:column}
+#top{flex:none;display:flex;align-items:center;gap:10px;padding:calc(8px + env(safe-area-inset-top)) 12px 8px}
+.ib{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--card);font-size:19px;display:grid;place-items:center;flex:none;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.ib:active{transform:scale(.92)}
+#tw{flex:1;min-width:0}
+#title{margin:0;font-size:18px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#lvl{font-size:12px;color:var(--mut);white-space:nowrap}
+#bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:4px}
+#bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--acc),var(--acc2));transition:width .4s}
+#hub{flex:1;overflow-y:auto;padding:4px 12px calc(24px + env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (min-width:700px){.grid{grid-template-columns:repeat(3,1fr)}#hub{max-width:760px;margin:0 auto;width:100%}}
+.card{position:relative;text-align:left;padding:14px 12px 12px;border-radius:18px;border:1px solid var(--line);background:var(--card);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  min-height:120px;display:flex;flex-direction:column;gap:4px;box-shadow:0 6px 20px rgba(60,40,120,.08)}
+.card:active{transform:scale(.97)}
+.card .e{font-size:34px;line-height:1}
+.card .n{font-weight:800;font-size:15px}
+.card .d{font-size:12px;color:var(--mut)}
+.card .c{position:absolute;top:10px;right:10px;font-size:11px;font-weight:700;color:var(--mut);background:var(--line);padding:2px 7px;border-radius:999px}
+.card.locked .e,.card.locked .n,.card.locked .d{opacity:.35;filter:grayscale(1)}
+.card .lk{position:absolute;inset:0;display:grid;place-items:center;font-size:13px;font-weight:800;border-radius:18px}
+h2.sec{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);margin:14px 2px 8px}
+.note{color:var(--mut);font-size:13px;margin:10px 2px}
+#play{flex:1;position:relative;min-height:0}
+#cv{position:absolute;inset:0;touch-action:none;display:block}
+#tools{position:absolute;left:0;right:0;bottom:calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:0 10px;pointer-events:none}
+#tools button{pointer-events:auto;border:none;border-radius:999px;padding:9px 14px;font-weight:700;font-size:13px;background:rgba(20,16,40,.62);color:#fff;
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 4px 14px rgba(0,0,0,.25)}
+#tools button:active{transform:scale(.95)}
+#hint{position:absolute;left:50%;top:46px;translate:-50% 0;max-width:calc(100% - 24px);text-align:center;font-size:13px;font-weight:600;color:#fff;background:rgba(20,16,40,.6);padding:6px 12px;border-radius:999px;pointer-events:none;opacity:.95;transition:opacity 1s}
+#hint:empty{display:none}
+#hint.off{opacity:0}
+#dim{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:20}
+#sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;max-height:88vh;overflow:auto;background:var(--sheet);border-radius:22px 22px 0 0;
+  padding:14px 16px calc(24px + env(safe-area-inset-bottom));box-shadow:0 -10px 40px rgba(0,0,0,.3);transform:translateY(100%);visibility:hidden;transition:transform .25s,visibility 0s .25s}
+#sheet.on{transform:none;visibility:visible;transition:transform .25s}
+@media (min-width:700px){#sheet{left:50%;right:auto;width:460px;translate:-50% 0}}
+.hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.hd h3{margin:0;font-size:18px}
+h4{margin:18px 0 6px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}
+.f{margin:12px 0}
+.f>label{display:flex;justify-content:space-between;font-weight:600;font-size:14px;margin-bottom:6px}
+.f output{color:var(--acc);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--acc);height:28px;margin:0}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{flex:1 1 auto;min-height:38px;padding:6px 10px;border-radius:10px;border:1px solid var(--line);background:var(--inp);font-size:13px}
+.seg button.on{background:var(--acc);color:#fff;border-color:transparent;font-weight:700}
+.tog{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0;font-weight:600;font-size:14px}
+.sw{appearance:none;-webkit-appearance:none;width:50px;height:30px;border-radius:99px;background:#9a94b5;position:relative;cursor:pointer;transition:background .2s;flex:none;margin:0}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .2s}
+.sw:checked{background:var(--acc)}
+.sw:checked::after{transform:translateX(20px)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row{display:flex;gap:8px;align-items:center}
+.row>input{flex:1;min-width:0}
+.btn{border:1px solid var(--line);background:var(--inp);border-radius:12px;padding:10px 12px;font-weight:700;min-height:42px}
+.btn:active{transform:scale(.97)}
+.btn.main{background:var(--acc);color:#fff;border:none}
+.btn.danger{background:#5a1d2b;color:#fff;border:none}
+.btn.dev{width:100%;margin-top:12px;background:var(--acc2);color:#063;border:none}
+textarea,input[type=text]{width:100%;font:16px system-ui,sans-serif;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--inp);color:var(--txt)}
+textarea{min-height:60px;resize:vertical;margin-top:8px;font-size:13px;word-break:break-all}
+#devMsg{font-weight:800;min-height:1.2em;margin:8px 0}
+#toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));translate:-50% 0;z-index:60;background:#fff;color:#000;font-weight:700;padding:10px 16px;
+  border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.4);pointer-events:none;transition:opacity .25s;opacity:0;max-width:calc(100vw - 32px);text-align:center}
+#toast.on{opacity:1}
+#stats{position:absolute;left:12px;top:44px;font:11px ui-monospace,Menlo,monospace;color:#7CFC00;background:rgba(0,0,0,.55);padding:3px 6px;border-radius:6px;pointer-events:none}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="top">
+    <button id="back" class="ib" hidden aria-label="Retour">←</button>
+    <div id="tw"><h1 id="title">🪷 ASMR Zen</h1><div id="lvl">Niveau 1 · 0 🪷</div><div id="bar"><i></i></div></div>
+    <button id="saveBtn" class="ib" aria-label="Sauvegarder" title="Sauvegarder">💾</button>
+    <button id="gear" class="ib" aria-label="Réglages">⚙️</button>
+  </header>
+  <main id="hub"></main>
+  <section id="play" hidden>
+    <canvas id="cv"></canvas>
+    <div id="hint"></div>
+    <div id="stats" hidden></div>
+    <div id="tools"></div>
+  </section>
+</div>
+
+<div id="dim" hidden></div>
+<div id="sheet" role="dialog" aria-label="Réglages">
+  <div class="hd"><h3>⚙️ Réglages</h3><button id="shClose" class="ib" aria-label="Fermer">✕</button></div>
+  <div class="f"><label for="sVol">🔊 Volume <output id="oVol"></output></label><input type="range" id="sVol" min="0" max="1" step="0.05"></div>
+  <div class="f"><label>🌙 Ambiance de fond</label><div class="seg" id="sAmb"></div></div>
+  <div class="f"><label for="sAmbVol">Volume de l'ambiance <output id="oAmbVol"></output></label><input type="range" id="sAmbVol" min="0" max="1" step="0.05"></div>
+  <label class="tog"><span>📳 Vibrations (Android)</span><input type="checkbox" id="sHap" class="sw"></label>
+  <label class="tog"><span>✨ Particules et effets</span><input type="checkbox" id="sFx" class="sw"></label>
+  <div class="f"><label>🎨 Thème</label><div class="seg" id="sTheme"></div></div>
+  <h4>💾 Sauvegarde</h4>
+  <p class="note">Ta progression se sauvegarde toute seule sur cet appareil. Le code te permet de la transférer sur un autre téléphone.</p>
+  <div class="grid2"><button id="bSave" class="btn main" type="button">💾 Sauvegarder</button><button id="bCode" class="btn" type="button">📋 Copier mon code</button></div>
+  <textarea id="impCode" placeholder="Colle un code de sauvegarde ici"></textarea>
+  <div class="grid2"><button id="bImp" class="btn" type="button">📥 Importer</button><button id="bReset" class="btn danger" type="button">♻️ Réinitialiser</button></div>
+  <button id="bDev" class="btn dev" type="button">🛠️ DEV</button>
+  <div id="devBox" hidden>
+    <div class="row" style="margin-top:10px"><input id="devCode" type="text" placeholder="Code secret" autocomplete="off" autocapitalize="characters" spellcheck="false"><button id="devOk" class="btn" type="button">OK</button></div>
+    <p id="devMsg"></p>
+    <div id="devTools" class="grid2" hidden>
+      <button class="btn" type="button" data-dev="pts">+1000 🪷</button>
+      <button class="btn" type="button" data-dev="max">Niveau max</button>
+      <button class="btn" type="button" data-dev="zero">Points à 0</button>
+      <button class="btn danger" type="button" data-dev="off">❌ Quitter</button>
+    </div>
+  </div>
+  <p class="note">🔇 Pas de son sur iPhone ? Désactive le mode silencieux (le petit bouton sur le côté).</p>
+</div>
+<div id="toast"></div>
+
+<script src="core.js"></script>
+<script src="acts1.js"></script>
+<script src="acts2.js"></script>
+<script>ASMR.start();</script>
+</body>
+</html>
