@@ -219,7 +219,7 @@ const fmtN=n=>n>=1000?(n/1000).toFixed(1)+'k':String(n);
 function renderHub(){
   const L=level();let h='<h2 class="sec">Activités</h2><div class="grid">';
   for(const id in ACTS){const a=ACTS[id],un=unlocked(id),c=G.counts[id]||0;
-    h+=`<button type="button" class="card${un?'':' locked'}" data-id="${id}"><span class="e">${a.e}</span><span class="n">${esc(a.n)}</span><span class="d">${esc(a.d)}</span>${c&&un?`<span class="c">${fmtN(c)}</span>`:''}${un?'':`<span class="lk">🔒 Niveau ${a.lvl}</span>`}</button>`;}
+    h+=`<button type="button" class="card${un?'':' locked'}" data-id="${id}"><span class="e">${a.e}</span><span class="n">${esc(a.n)}</span><span class="d">${esc(a.d)}</span>${c&&un?`<span class="c">${fmtN(c)}</span>`:''}${un?'':`<span class="lk">🔒 Niv. ${a.lvl}</span>`}</button>`;}
   h+='</div>';
   const nxt=Object.values(ACTS).filter(a=>a.lvl>L&&!god).sort((a,b)=>a.lvl-b.lvl)[0];
   h+=`<p class="note">${nxt?`Prochain déblocage : ${nxt.e} ${esc(nxt.n)} au niveau ${nxt.lvl} (${thr(nxt.lvl)} 🪷). Chaque geste rapporte des 🪷.`:'Tout est débloqué 🎉 Continue pour le plaisir.'}</p>`;
