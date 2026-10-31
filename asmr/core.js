@@ -218,7 +218,7 @@ function loop(now){
 const fmtN=n=>n>=1000?(n/1000).toFixed(1)+'k':String(n);
 function renderHub(){
   const L=level();let h='<h2 class="sec">Activités</h2><div class="grid">';
-  for(const id in ACTS){const a=ACTS[id],un=unlocked(id),c=G.counts[id]||0;
+  for(const id of Object.keys(ACTS).sort((x,y)=>ACTS[x].lvl-ACTS[y].lvl)){const a=ACTS[id],un=unlocked(id),c=G.counts[id]||0;
     h+=`<button type="button" class="card${un?'':' locked'}" data-id="${id}"><span class="e">${a.e}</span><span class="n">${esc(a.n)}</span><span class="d">${esc(a.d)}</span>${c&&un?`<span class="c">${fmtN(c)}</span>`:''}${un?'':`<span class="lk">🔒 Niv. ${a.lvl}</span>`}</button>`;}
   h+='</div>';
   const nxt=Object.values(ACTS).filter(a=>a.lvl>L&&!god).sort((a,b)=>a.lvl-b.lvl)[0];
@@ -271,5 +271,5 @@ addEventListener('pagehide',()=>save(true));
 
 function start(){load();applyTheme();renderHub();requestAnimationFrame(loop);}
 return{register,start,get ctx(){return ctx;},get VW(){return VW;},get VH(){return VH;},get DPR(){return DPR;},get act(){return act;},ptrs,G,
-  SFX,cont,audio,award,spawnP,mk,mk0,rr,rrc,lighten,darken,shade,bgSoft,hud,drawKnife,wrapChars,vib,clamp,rnd,pick,TAU,toast};
+  SFX,snd:{ready,out,tone,hiss,t:()=>AU.ctx.currentTime},cont,audio,award,spawnP,mk,mk0,rr,rrc,lighten,darken,shade,bgSoft,hud,drawKnife,wrapChars,vib,clamp,rnd,pick,TAU,toast};
 })();
